@@ -12,7 +12,6 @@ import Image from "next/image";
 
 import {
   usePathname,
-  useSearchParams,
 } from "next/navigation";
 
 import ProductSearch from "@/components/ProductSearch";
@@ -68,27 +67,17 @@ const navLinks = [
 
 function isActivePath(
   pathname: string,
-  searchParams: URLSearchParams,
   href: string
 ) {
-  const currentUrl =
-    pathname +
-    (searchParams.toString()
-      ? `?${searchParams.toString()}`
-      : "");
-
   if (href === "/") {
-    return currentUrl === "/";
+    return pathname === "/";
   }
 
-  return currentUrl === href;
+  return pathname === href;
 }
 
 export default function StoreNavbar() {
   const pathname = usePathname();
-
-  const searchParams =
-    useSearchParams();
 
   const { isLoggedIn, user, logout } =
     useAuth();
@@ -301,10 +290,8 @@ NAVBAR SHOW / HIDE
               const active =
                 isActivePath(
                   pathname,
-                  searchParams,
                   item.href
                 );
-
               return (
                 <div
                   key={item.href}
