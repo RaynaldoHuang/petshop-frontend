@@ -21,15 +21,12 @@ import {
 
 import {
   useParams,
-  useSearchParams,
 } from "next/navigation";
 
 export default function PaymentPage() {
 
   const params =
     useParams<{ id: string }>();
-
-  const searchParams = useSearchParams();
 
   const [error, setError] =
     useState("");
@@ -158,44 +155,27 @@ AUTO CHECK PAYMENT STATUS
   =========================================
   */
   useEffect(() => {
-
     async function loadPayment() {
-
       try {
-
-        setError("");
+        const urlParams =
+          new URLSearchParams(window.location.search);
 
         const transactionId =
-          searchParams.get("payment");
-
-        console.log("PAYMENT ID:", transactionId);
+          urlParams.get("payment");
 
         if (!transactionId) {
-
           throw new Error(
             "Transaction tidak ditemukan"
           );
         }
 
-        console.log(
-
-          "FETCH URL:",
-
-          `${process.env.NEXT_PUBLIC_API_URL}/payments/${transactionId}`
-
-        );
-
-        console.log("PAYMENT ID:", transactionId);
-
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/payments/${transactionId}`
         );
 
-        const data =
-          await res.json();
+        const data = await res.json();
 
         if (!res.ok) {
-
           throw new Error(
             data.message ||
             "Gagal memuat pembayaran"
@@ -203,9 +183,7 @@ AUTO CHECK PAYMENT STATUS
         }
 
         setPaymentData(data);
-
       } catch (err) {
-
         setError(
           err instanceof Error
             ? err.message

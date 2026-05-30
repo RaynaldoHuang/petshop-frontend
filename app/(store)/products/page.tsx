@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 
-import { useSearchParams } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -53,9 +52,8 @@ function getImageUrl(image: string | null) {
 }
 
 export default function ProductsPage() {
-  const searchParams = useSearchParams();
-  const categorySlug =
-    searchParams.get("category");
+  const [categorySlug, setCategorySlug] =
+    useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] =
@@ -65,6 +63,17 @@ export default function ProductsPage() {
 
   const [currentPage, setCurrentPage] =
     useState(1);
+
+  useEffect(() => {
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    setCategorySlug(
+      params.get("category")
+    );
+  }, []);
 
   function handlePageChange(page: number) {
     setCurrentPage(page);
@@ -129,6 +138,7 @@ export default function ProductsPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory]);
+
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -203,8 +213,8 @@ export default function ProductsPage() {
                 setActiveCategory("all")
               }
               className={`rounded-full px-5 py-3 text-sm font-medium transition cursor-pointer ${activeCategory === "all"
-                  ? "bg-[#19398A] text-white"
-                  : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
+                ? "bg-[#19398A] text-white"
+                : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
                 }`}
             >
               All Products
@@ -220,9 +230,9 @@ export default function ProductsPage() {
                   )
                 }
                 className={`rounded-full px-5 py-3 text-sm font-medium transition cursor-pointer ${activeCategory ===
-                    category.id
-                    ? "bg-[#19398A] text-white"
-                    : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
+                  category.id
+                  ? "bg-[#19398A] text-white"
+                  : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
                   }`}
               >
                 {category.name}
