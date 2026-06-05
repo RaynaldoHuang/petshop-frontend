@@ -4,9 +4,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import {
   useEffect,
   useMemo,
   useState,
+  Suspense,
 } from "react";
 
 
@@ -51,7 +56,11 @@ function getImageUrl(image: string | null) {
   return `http://localhost:8000/storage/${image}`;
 }
 
-export default function ProductsPage() {
+function ProductsPageContent() {
+  const router = useRouter();
+  const searchParams =
+    useSearchParams();
+
   const [categorySlug, setCategorySlug] =
     useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -65,15 +74,10 @@ export default function ProductsPage() {
     useState(1);
 
   useEffect(() => {
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
-
     setCategorySlug(
-      params.get("category")
+      searchParams.get("category")
     );
-  }, []);
+  }, [searchParams]);
 
   function handlePageChange(page: number) {
     setCurrentPage(page);
@@ -137,7 +141,36 @@ export default function ProductsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeCategory]);
+  }, [activeCategory, categorySlug]);
+
+  useEffect(() => {
+    if (!categorySlug) {
+      setActiveCategory("all");
+      return;
+    }
+
+    const category = categories.find(
+      (item) => item.slug === categorySlug
+    );
+
+    if (category) {
+      setActiveCategory(category.id);
+    }
+  }, [categories, categorySlug]);
+
+  function handleAllProducts() {
+    setActiveCategory("all");
+    router.push("/products");
+  }
+
+  function handleCategoryChange(
+    category: Category
+  ) {
+    setActiveCategory(category.id);
+    router.push(
+      `/products?category=${category.slug}`
+    );
+  }
 
 
   const filteredProducts = useMemo(() => {
@@ -182,37 +215,35 @@ export default function ProductsPage() {
     );
 
   return (
-    <main className="bg-white py-12">
+    <main className="bg-white py-8 lg:py-12">
       <div className="mx-auto max-w-7xl px-4">
         {/* HEADER */}
-        {/* <div className="mb-12">
-          <p className="text-sm font-bold uppercase tracking-wide text-orange-500">
+        <div className="mb-6 lg:mb-10">
+          <p className="text-xs font-bold uppercase tracking-wide text-orange-500 lg:text-sm">
             Our Products
           </p>
 
-          <h1 className="mt-2 text-4xl font-bold text-[#19398A]">
+          <h1 className="mt-2 text-3xl font-bold leading-tight text-[#19398A] lg:text-4xl">
             Explore Pet Essentials
           </h1>
 
-          <p className="mt-3 max-w-2xl text-gray-500">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500 lg:text-base lg:leading-7">
             Temukan makanan,
             aksesoris, vitamin,
             dan kebutuhan terbaik
             untuk hewan
             kesayangan Anda.
           </p>
-        </div> */}
+        </div>
 
         {/* CATEGORY */}
-        {/* CATEGORY */}
-        {!categorySlug ? (
-          <div className="mb-12 flex flex-wrap gap-3">
+        <div className="-mx-4 mb-7 overflow-x-auto px-4 pb-1 lg:mx-0 lg:mb-12 lg:overflow-visible lg:px-0 lg:pb-0">
+          <div className="flex min-w-max gap-2 lg:min-w-0 lg:flex-wrap lg:gap-3">
             <button
               type="button"
-              onClick={() =>
-                setActiveCategory("all")
-              }
-              className={`rounded-full px-5 py-3 text-sm font-medium transition cursor-pointer ${activeCategory === "all"
+              onClick={handleAllProducts}
+              className={`h-11 rounded-full px-5 text-sm font-medium transition cursor-pointer lg:h-auto lg:py-3 ${activeCategory === "all"
+                && !categorySlug
                 ? "bg-[#19398A] text-white"
                 : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
                 }`}
@@ -225,12 +256,15 @@ export default function ProductsPage() {
                 key={category.id}
                 type="button"
                 onClick={() =>
-                  setActiveCategory(
-                    category.id
+                  handleCategoryChange(
+                    category
                   )
                 }
-                className={`rounded-full px-5 py-3 text-sm font-medium transition cursor-pointer ${activeCategory ===
-                  category.id
+                className={`h-11 rounded-full px-5 text-sm font-medium transition cursor-pointer lg:h-auto lg:py-3 ${categorySlug ===
+                  category.slug ||
+                  (!categorySlug &&
+                    activeCategory ===
+                    category.id)
                   ? "bg-[#19398A] text-white"
                   : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
                   }`}
@@ -239,17 +273,17 @@ export default function ProductsPage() {
               </button>
             ))}
           </div>
-        ) : null}
+        </div>
 
         {/* CONTENT */}
         {loading ? (
-          <div className="py-20 text-center text-gray-500">
+          <div className="rounded-2xl border border-gray-100 bg-gray-50 py-16 text-center text-sm text-gray-500 lg:py-20">
             Loading
             products...
           </div>
         ) : paginatedProducts.length ===
           0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
+          <div className="rounded-2xl border border-dashed border-gray-300 px-5 py-12 text-center lg:p-10">
             <p className="font-semibold text-gray-700">
               Produk belum
               tersedia.
@@ -258,7 +292,7 @@ export default function ProductsPage() {
         ) : (
           <>
             {/* PRODUCTS */}
-            <div className="grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-5 sm:grid-cols-2 lg:grid-cols-5 lg:gap-y-10">
               {paginatedProducts.map(
                 (product) => {
                   const flashPrice =
@@ -331,15 +365,15 @@ export default function ProductsPage() {
                       <Link
                         href={`/products/${product.slug}`}
                       >
-                        <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100">
+                        <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100 lg:rounded-2xl">
                           {/* BADGE */}
                           {isFlashSale ? (
-                            <div className="absolute left-3 top-3 z-20 rounded-full bg-red-600 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white">
+                            <div className="absolute left-2 top-2 z-20 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white lg:left-3 lg:top-3 lg:px-3 lg:text-[11px]">
                               Flash
                               Sale
                             </div>
                           ) : isNormalSale ? (
-                            <div className="absolute left-3 top-3 z-20 rounded-full bg-orange-500 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white">
+                            <div className="absolute left-2 top-2 z-20 rounded-full bg-orange-500 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white lg:left-3 lg:top-3 lg:px-3 lg:text-[11px]">
                               Sale
                             </div>
                           ) : null}
@@ -358,17 +392,17 @@ export default function ProductsPage() {
                         </div>
                       </Link>
 
-                      <div className="pt-4">
-                        <h3 className="line-clamp-2 font-medium text-[#19398A] truncate">
+                      <div className="pt-3 lg:pt-4">
+                        <h3 className="line-clamp-2 min-h-[40px] text-sm font-medium leading-5 text-[#19398A] lg:min-h-0 lg:truncate lg:text-base lg:leading-normal">
                           {
                             product.name
                           }
                         </h3>
 
-                        <div className="mt-3">
+                        <div className="mt-2 lg:mt-3">
                           {hasDiscount ? (
                             <>
-                              <p className="text-sm font-medium text-gray-400 line-through">
+                              <p className="text-xs font-medium text-gray-400 line-through lg:text-sm">
                                 Rp{" "}
                                 {Number(
                                   product.price
@@ -378,7 +412,7 @@ export default function ProductsPage() {
                               </p>
 
                               <p
-                                className={`text-lg font-bold ${isFlashSale
+                                className={`text-base font-bold lg:text-lg ${isFlashSale
                                   ? "text-red-600"
                                   : "text-orange-500"
                                   }`}
@@ -392,7 +426,7 @@ export default function ProductsPage() {
                               </p>
                             </>
                           ) : (
-                            <p className="text-lg font-bold text-orange-500">
+                            <p className="text-base font-bold text-orange-500 lg:text-lg">
                               Rp{" "}
                               {Number(
                                 product.price
@@ -417,7 +451,7 @@ export default function ProductsPage() {
 
             {/* PAGINATION */}
             {totalPages > 1 ? (
-              <div className="mt-12 flex items-center justify-center gap-3">
+              <div className="mt-10 flex flex-wrap items-center justify-center gap-2 lg:mt-12 lg:gap-3">
                 {Array.from({
                   length: totalPages,
                 }).map((_, index) => {
@@ -429,7 +463,7 @@ export default function ProductsPage() {
                       onClick={() =>
                         handlePageChange(page)
                       }
-                      className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold transition ${currentPage === page
+                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition lg:h-11 lg:w-11 ${currentPage === page
                         ? "bg-[#19398A] text-white shadow-md"
                         : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
                         }`}
@@ -444,5 +478,23 @@ export default function ProductsPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="bg-white py-12">
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="py-20 text-center text-gray-500">
+              Loading products...
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <ProductsPageContent />
+    </Suspense>
   );
 }

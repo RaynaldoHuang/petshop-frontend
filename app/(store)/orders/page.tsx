@@ -2,7 +2,19 @@
 
 import AuthGuard from "@/components/AuthGuard";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+
+import {
+  ArrowRight,
+  CalendarDays,
+  CreditCard,
+  PackageCheck,
+  ReceiptText,
+} from "lucide-react";
+
+import {
+  useEffect,
+  useState,
+} from "react";
 
 type OrderItem = {
   id: number;
@@ -35,46 +47,128 @@ type Order = {
   latest_payment: LatestPayment | null;
 };
 
+const tabs = [
+  {
+    key: "all",
+    label: "Semua",
+  },
+  {
+    key: "pending",
+    label: "Menunggu",
+  },
+  {
+    key: "paid",
+    label: "Dibayar",
+  },
+  {
+    key: "completed",
+    label: "Selesai",
+  },
+  {
+    key: "expired",
+    label: "Gagal",
+  },
+];
+
+function formatCurrency(value: string) {
+  return `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString(
+    "id-ID",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  );
+}
+
+function getPaymentStatus(order: Order) {
+  return order.latest_payment?.status ||
+    order.payment_status;
+}
+
 function getPaymentBadgeClass(paymentStatus: string) {
   switch (paymentStatus) {
     case "paid":
     case "settlement":
-      return "bg-green-100 text-green-700";
+      return "border-green-100 bg-green-50 text-green-700";
     case "pending":
-      return "bg-yellow-100 text-yellow-700";
+      return "border-orange-100 bg-orange-50 text-orange-600";
     case "failed":
     case "deny":
     case "cancelled":
     case "expire":
     case "expired":
-      return "bg-red-100 text-red-700";
+      return "border-red-100 bg-red-50 text-red-600";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "border-gray-100 bg-gray-50 text-gray-600";
   }
 }
 
 function getOrderBadgeClass(orderStatus: string) {
   switch (orderStatus) {
-    case "new":
-      return "bg-gray-100 text-gray-700";
     case "processed":
-      return "bg-blue-100 text-blue-700";
+      return "border-blue-100 bg-blue-50 text-blue-700";
     case "shipped":
-      return "bg-indigo-100 text-indigo-700";
+      return "border-indigo-100 bg-indigo-50 text-indigo-700";
     case "completed":
-      return "bg-green-100 text-green-700";
+      return "border-green-100 bg-green-50 text-green-700";
     case "cancelled":
-      return "bg-red-100 text-red-700";
+      return "border-red-100 bg-red-50 text-red-600";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "border-gray-100 bg-gray-50 text-gray-600";
+  }
+}
+
+function getPaymentLabel(paymentStatus: string) {
+  switch (paymentStatus) {
+    case "paid":
+    case "settlement":
+      return "Sudah Dibayar";
+    case "pending":
+      return "Menunggu Pembayaran";
+    case "expired":
+    case "expire":
+      return "Kadaluarsa";
+    case "failed":
+    case "deny":
+      return "Gagal";
+    case "cancelled":
+      return "Dibatalkan";
+    default:
+      return paymentStatus || "-";
+  }
+}
+
+function getOrderLabel(orderStatus: string) {
+  switch (orderStatus) {
+    case "new":
+      return "Pesanan Baru";
+    case "processed":
+      return "Diproses";
+    case "shipped":
+      return "Dikirim";
+    case "completed":
+      return "Selesai";
+    case "cancelled":
+      return "Dibatalkan";
+    default:
+      return orderStatus || "-";
   }
 }
 
 export default function CustomerOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] =
+    useState<Order[]>([]);
+
   const [activeTab, setActiveTab] =
     useState("all");
-  const [loading, setLoading] = useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
 
   useEffect(() => {
     async function fetchOrders() {
@@ -94,7 +188,8 @@ export default function CustomerOrdersPage() {
           }
         );
 
-        const data = await res.json();
+        const data =
+          await res.json();
 
         setOrders(data);
       } catch (error) {
@@ -109,10 +204,8 @@ export default function CustomerOrdersPage() {
 
   const filteredOrders =
     orders.filter((order) => {
-
       const paymentStatus =
-        order.latest_payment?.status ||
-        order.payment_status;
+        getPaymentStatus(order);
 
       if (activeTab === "all")
         return true;
@@ -121,69 +214,55 @@ export default function CustomerOrdersPage() {
         return paymentStatus === "pending";
 
       if (activeTab === "paid")
-        return paymentStatus === "paid";
+        return [
+          "paid",
+          "settlement",
+        ].includes(paymentStatus);
 
       if (activeTab === "expired")
         return [
           "expired",
+          "expire",
           "failed",
+          "deny",
+          "cancelled",
         ].includes(paymentStatus);
 
       if (activeTab === "completed")
-        return (
-          order.order_status ===
-          "completed"
-        );
+        return order.order_status ===
+          "completed";
 
       return true;
     });
 
   return (
     <AuthGuard>
-      <main className="bg-gray-50 py-10">
+      <main className="min-h-screen px-4 py-8 lg:px-0 lg:py-12">
 
         <div className="mx-auto max-w-7xl">
 
           {/* HEADER */}
-          <div className="mb-8">
+          <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-5  lg:mb-6 lg:flex lg:items-center lg:justify-between lg:gap-8 lg:rounded-xl lg:p-7">
 
-            <h1 className="text-4xl font-bold text-[#19398A]">
-              Pesanan Saya
-            </h1>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-500">
+                My Orders
+              </p>
 
-            <p className="mt-2 text-gray-500">
-              Pantau status pesanan dan pembayaran Anda secara real-time.
-            </p>
+              <h1 className="mt-2 text-3xl font-bold leading-tight text-[#19398A] lg:text-4xl">
+                Pesanan Saya
+              </h1>
 
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500 lg:text-base lg:leading-7">
+                Pantau pembayaran dan proses pengiriman pesananmu di satu tempat.
+              </p>
+            </div>
           </div>
 
-          <div className="mb-8">
-
-            <div className="flex flex-wrap gap-3">
-
-              {[
-                {
-                  key: "all",
-                  label: "Semua",
-                },
-                {
-                  key: "pending",
-                  label: "Pending",
-                },
-                {
-                  key: "paid",
-                  label: "Paid",
-                },
-                {
-                  key: "completed",
-                  label: "Completed",
-                },
-                {
-                  key: "expired",
-                  label: "Expired",
-                },
-              ].map((tab) => {
-
+          {/* FILTER */}
+          <div className="mb-5 overflow-x-auto pb-1 lg:mb-6">
+            <div className="flex min-w-max gap-2">
+              {tabs.map((tab) => {
                 const active =
                   activeTab === tab.key;
 
@@ -193,223 +272,166 @@ export default function CustomerOrdersPage() {
                     onClick={() =>
                       setActiveTab(tab.key)
                     }
-                    className={`rounded-xl px-5 py-3 text-sm font-semibold transition ${active
-                        ? "bg-orange-500 text-white"
-                        : "border border-gray-200 bg-white text-gray-600 hover:border-orange-200"
-                      }`}
+                    className={`h-11 rounded-full border px-5 text-sm font-semibold transition ${active
+                      ? "border-[#19398A] bg-[#19398A] text-white"
+                      : "border-gray-200 bg-white text-gray-500 hover:border-orange-200 hover:text-[#19398A]"
+                    }`}
                   >
                     {tab.label}
                   </button>
                 );
               })}
             </div>
-
           </div>
 
           {loading ? (
 
-            <div className="rounded-3xl border border-gray-200 bg-white p-8">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-500 shadow-sm shadow-gray-100 lg:rounded-xl">
               Memuat pesanan...
             </div>
 
           ) : filteredOrders.length === 0 ? (
 
-            <div className="rounded-3xl border border-dashed border-gray-200 bg-white p-12 text-center">
+            <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-12 text-center shadow-sm shadow-gray-100 lg:rounded-xl lg:px-12">
 
-              <h2 className="text-2xl font-bold text-[#19398A]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
+                <ReceiptText size={30} />
+              </div>
+
+              <h2 className="mt-5 text-2xl font-bold text-[#19398A]">
                 Belum Ada Pesanan
               </h2>
 
-              <p className="mt-3 text-gray-500">
-                Pesanan yang Anda buat akan muncul di sini.
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+                Pesanan yang kamu buat akan muncul di sini.
               </p>
 
               <Link
                 href="/products"
-                className="mt-6 inline-flex rounded-xl bg-orange-500 px-6 py-3 text-white"
+                className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-orange-500 px-6 text-sm font-semibold text-white transition hover:bg-orange-600"
               >
                 Mulai Belanja
+                <ArrowRight size={17} />
               </Link>
 
             </div>
 
           ) : (
 
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-5">
 
-              {filteredOrders.map((order) => (
+              {filteredOrders.map((order) => {
+                const paymentStatus =
+                  getPaymentStatus(order);
 
-                <div
-                  key={order.id}
-                  className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm"
-                >
+                const firstItem =
+                  order.items[0];
 
-                  {/* TOP */}
-                  <div className="border-b border-gray-100 bg-gray-50 px-6 py-5">
+                const remainingItems =
+                  Math.max(
+                    order.items.length - 1,
+                    0
+                  );
 
-                    <div className="flex flex-wrap items-center justify-between gap-4">
+                return (
+                  <article
+                    key={order.id}
+                    className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm shadow-gray-100 lg:rounded-xl"
+                  >
 
-                      <div>
+                    <div className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-center lg:p-6">
 
-                        <h2 className="text-xl font-bold text-[#19398A]">
-                          Order #{order.id}
-                        </h2>
+                      <div className="min-w-0">
 
-                        <p className="mt-1 text-sm text-gray-500">
-                          {new Date(
-                            order.created_at
-                          ).toLocaleString("id-ID")}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-lg font-bold text-[#19398A]">
+                            Order #{order.id}
+                          </span>
 
-                      </div>
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${getPaymentBadgeClass(paymentStatus)}`}
+                          >
+                            {getPaymentLabel(paymentStatus)}
+                          </span>
 
-                      <div className="flex gap-2">
-
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getPaymentBadgeClass(
-                            order.latest_payment?.status ||
-                            order.payment_status
-                          )}`}
-                        >
-                          {order.latest_payment?.status ||
-                            order.payment_status}
-                        </span>
-
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getOrderBadgeClass(
-                            order.order_status
-                          )}`}
-                        >
-                          {order.order_status}
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                  {/* ITEMS */}
-                  <div className="space-y-3 p-6">
-
-                    {order.items.map((item) => (
-
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between rounded-2xl border border-gray-100 p-4"
-                      >
-
-                        <div>
-
-                          <h3 className="font-semibold text-[#19398A]">
-                            {item.product_name}
-                          </h3>
-
-                          <p className="mt-1 text-sm text-gray-500">
-                            {item.quantity} x Rp{" "}
-                            {Number(
-                              item.price
-                            ).toLocaleString(
-                              "id-ID"
-                            )}
-                          </p>
-
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold ${getOrderBadgeClass(order.order_status)}`}
+                          >
+                            {getOrderLabel(order.order_status)}
+                          </span>
                         </div>
 
-                        <div className="font-semibold text-orange-500">
+                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
+                          <span className="inline-flex items-center gap-2">
+                            <CalendarDays size={16} />
+                            {formatDate(order.created_at)}
+                          </span>
 
-                          Rp{" "}
-                          {Number(
-                            item.subtotal
-                          ).toLocaleString(
-                            "id-ID"
-                          )}
-
+                          <span className="inline-flex items-center gap-2">
+                            <PackageCheck size={16} />
+                            {order.items.length} produk
+                          </span>
                         </div>
+
+                        {firstItem ? (
+                          <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0">
+                                <h3 className="truncate font-semibold text-[#19398A]">
+                                  {firstItem.product_name}
+                                </h3>
+
+                                <p className="mt-1 text-sm text-gray-500">
+                                  {firstItem.quantity} x {formatCurrency(firstItem.price)}
+                                  {remainingItems > 0
+                                    ? ` + ${remainingItems} produk lainnya`
+                                    : ""}
+                                </p>
+                              </div>
+
+                              <p className="shrink-0 text-sm font-semibold text-orange-500">
+                                {formatCurrency(firstItem.subtotal)}
+                              </p>
+                            </div>
+                          </div>
+                        ) : null}
 
                       </div>
 
-                    ))}
-
-                  </div>
-
-                  {/* FOOTER */}
-                  <div className="border-t border-gray-100 px-6 py-5">
-
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-                      <div>
-
-                        <p className="text-sm text-gray-500">
+                      <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4 lg:p-5">
+                        <p className="flex items-center gap-2 text-sm text-orange-600">
+                          <CreditCard size={16} />
                           Total Pembayaran
                         </p>
 
-                        <h3 className="mt-1 text-2xl font-bold text-orange-500">
-
-                          Rp{" "}
-                          {Number(
-                            order.total_price
-                          ).toLocaleString(
-                            "id-ID"
-                          )}
-
+                        <h3 className="mt-2 text-2xl font-bold text-orange-500">
+                          {formatCurrency(order.total_price)}
                         </h3>
 
-                      </div>
-
-                      <div className="flex flex-wrap gap-3">
-
-                        {order.latest_payment &&
-                          order.latest_payment
-                            .status ===
-                          "pending" && (
-
+                        <div className="mt-4 grid gap-2">
+                          {order.latest_payment?.status === "pending" ? (
                             <Link
                               href={`/checkout/payment/${order.id}?payment=${order.latest_payment.id}`}
-                              className="rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+                              className="flex h-11 items-center justify-center rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white transition hover:bg-orange-600"
                             >
                               Lanjutkan Pembayaran
                             </Link>
-
-                          )}
-
-                        {order.latest_payment &&
-                          [
-                            "expired",
-                            "failed",
-                          ].includes(
-                            order.latest_payment
-                              .status
-                          ) && (
-
-                            <button
-                              className="rounded-xl bg-red-500 px-5 py-3 text-sm font-semibold text-white hover:bg-red-600"
-                            >
-                              Bayar Ulang
-                            </button>
-
-                          )}
-
-                        {order.latest_payment && (
+                          ) : null}
 
                           <Link
                             href={`/orders/${order.id}`}
-                            className="rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                            className="flex h-11 items-center justify-center rounded-xl border border-orange-200 bg-white px-4 text-sm font-semibold text-[#19398A] transition hover:border-[#19398A]"
                           >
-                            Detail Pembayaran
+                            Detail Pesanan
                           </Link>
-
-                        )}
-
+                        </div>
                       </div>
 
                     </div>
 
-                  </div>
-
-                </div>
-
-              ))}
+                  </article>
+                );
+              })}
 
             </div>
 

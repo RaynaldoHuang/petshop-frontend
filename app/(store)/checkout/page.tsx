@@ -261,12 +261,12 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="pb-16 pt-10">
+    <main className="pb-12 pt-6 lg:pb-16 lg:pt-10">
 
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl px-4 lg:px-0">
 
         {/* BREADCRUMB */}
-        <div className="mb-8 flex items-center gap-2 text-sm">
+        <div className="mb-5 flex flex-wrap items-center gap-1.5 text-xs lg:mb-8 lg:gap-2 lg:text-sm">
 
           <Link
             href="/"
@@ -298,21 +298,21 @@ export default function CheckoutPage() {
         </div>
 
         {cartItems.length === 0 ? (
-          <div className="flex flex-col items-center rounded-xl border border-dashed border-gray-200 bg-white px-6 py-24 text-center">
-            <div className="flex h-28 w-28 items-center justify-center rounded-full bg-orange-50">
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center lg:py-24">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 lg:h-28 lg:w-28">
 
               <ShoppingBag
-                size={54}
+                size={48}
                 className="text-orange-500"
               />
 
             </div>
 
-            <h2 className="mt-8 text-3xl font-bold text-[#19398A]">
+            <h2 className="mt-6 text-2xl font-bold text-[#19398A] lg:mt-8 lg:text-3xl">
               Keranjang masih kosong
             </h2>
 
-            <p className="mt-4 max-w-lg leading-7 text-gray-500">
+            <p className="mt-3 max-w-lg text-sm leading-7 text-gray-500 lg:mt-4 lg:text-base">
               Tambahkan produk terlebih dahulu sebelum melanjutkan checkout.
             </p>
 
@@ -332,11 +332,11 @@ export default function CheckoutPage() {
           CONTENT
           =========================================
           */
-          <div className="grid gap-4 grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-3 lg:gap-4">
             {/* LEFT */}
             <form
               onSubmit={handleSubmit}
-              className="rounded-lg border border-gray-200 bg-white p-6 h-fit col-span-2"
+              className="order-2 h-fit rounded-lg border border-gray-200 bg-white p-4 lg:order-1 lg:col-span-2 lg:p-6"
             >
 
               {/* HEADER */}
@@ -344,18 +344,18 @@ export default function CheckoutPage() {
 
                 <div>
 
-                  <h2 className="text-2xl font-semibold text-[#19398A]">
+                  <h2 className="text-xl font-semibold text-[#19398A] lg:text-2xl">
                     Data Pengiriman
                   </h2>
 
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-1.5 text-sm text-gray-500 lg:mt-2">
                     Pastikan data penerima sudah benar.
                   </p>
                 </div>
               </div>
 
               {/* FORM */}
-              <div className="mt-8 grid gap-6">
+              <div className="mt-6 grid gap-5 lg:mt-8 lg:gap-6">
 
                 {/* NAME */}
                 <div>
@@ -372,7 +372,7 @@ export default function CheckoutPage() {
                         e.target.value
                       )
                     }
-                    className="h-14 w-full rounded-xl border border-gray-200 bg-gray-50 px-5 text-sm text-[#19398A] outline-none transition focus:border-orange-500 focus:bg-white"
+                    className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-[#19398A] outline-none transition focus:border-orange-500 focus:bg-white lg:h-14 lg:px-5"
                     placeholder="Masukkan nama lengkap"
                     required
                   />
@@ -394,7 +394,7 @@ export default function CheckoutPage() {
                         e.target.value
                       )
                     }
-                    className="h-14 w-full rounded-xl border border-gray-200 bg-gray-50 px-5 text-sm text-[#19398A] outline-none transition focus:border-orange-500 focus:bg-white"
+                    className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-[#19398A] outline-none transition focus:border-orange-500 focus:bg-white lg:h-14 lg:px-5"
                     placeholder="08xxxxxxxxxx"
                     required
                   />
@@ -415,8 +415,8 @@ export default function CheckoutPage() {
                         e.target.value
                       )
                     }
-                    rows={6}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm text-[#19398A] outline-none transition focus:border-orange-500 focus:bg-white"
+                    rows={5}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-[#19398A] outline-none transition focus:border-orange-500 focus:bg-white lg:px-5 lg:py-4"
                     placeholder="Masukkan alamat lengkap"
                     required
                   />
@@ -444,7 +444,7 @@ export default function CheckoutPage() {
                           onClick={() =>
                             setSelectedPayment(method)
                           }
-                          className={`flex items-center justify-between rounded-xl border p-4 text-left transition ${active
+                          className={`flex items-center justify-between gap-4 rounded-xl border p-4 text-left transition ${active
                             ? "border-orange-500 bg-orange-50"
                             : "border-gray-200 hover:border-orange-200"
                             }`}
@@ -452,11 +452,11 @@ export default function CheckoutPage() {
 
                           <div>
 
-                            <p className="font-semibold text-[#19398A]">
+                            <p className="text-sm font-semibold text-[#19398A] lg:text-base">
                               {method.name}
                             </p>
 
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className="mt-1 text-xs text-gray-500 lg:text-sm">
                               Biaya admin Rp{" "}
                               {method.fee.toLocaleString("id-ID")}
                             </p>
@@ -489,7 +489,7 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 flex h-15 w-full items-center justify-center rounded-xl bg-orange-500 text-sm font-semibold text-white"
+                  className="mt-1 flex h-12 w-full items-center justify-center rounded-xl bg-orange-500 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70 lg:mt-2 lg:h-15"
                 >
                   {loading
                     ? "Memproses Order..."
@@ -500,24 +500,24 @@ export default function CheckoutPage() {
             </form>
 
             {/* RIGHT */}
-            <div className="h-fit self-start rounded-lg border border-gray-200 bg-white p-6 lg:sticky lg:top-8">
+            <div className="order-1 h-fit self-start rounded-lg border border-gray-200 bg-white p-4 lg:order-2 lg:sticky lg:top-8 lg:p-6">
 
               {/* TITLE */}
-              <h2 className="text-xl font-semibold text-[#19398A]">
+              <h2 className="text-lg font-semibold text-[#19398A] lg:text-xl">
                 Ringkasan Pesanan
               </h2>
 
               {/* ITEMS */}
-              <div className="mt-6 space-y-4">
+              <div className="mt-4 space-y-3 lg:mt-6 lg:space-y-4">
                 {cartItems.map((item) => (
 
                   <div
                     key={`${item.id}-${item.variantName || "default"}`}
-                    className="flex gap-4 rounded-lg border border-gray-100 p-4"
+                    className="flex gap-3 rounded-lg border border-gray-100 p-3 lg:gap-4 lg:p-4"
                   >
 
                     {/* IMAGE */}
-                    <div className="h-22 w-22 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                    <div className="h-18 w-18 shrink-0 overflow-hidden rounded-lg bg-gray-100 lg:h-22 lg:w-22 lg:rounded-xl">
 
                       <Image
                         src={getImageUrl(
@@ -535,7 +535,7 @@ export default function CheckoutPage() {
                     {/* CONTENT */}
                     <div className="min-w-0 flex-1">
 
-                      <h3 className="truncate text-sm text-[#19398A]">
+                      <h3 className="line-clamp-2 text-sm leading-5 text-[#19398A] lg:truncate lg:leading-normal">
                         {item.name}
                       </h3>
 
@@ -548,7 +548,7 @@ export default function CheckoutPage() {
                         </div>
                       ) : null}
 
-                      <div className="mt-3 flex items-center justify-between">
+                      <div className="mt-3 flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between">
 
                         <p className="text-xs text-gray-400">
                           {item.quantity} x Rp{" "}
@@ -557,7 +557,7 @@ export default function CheckoutPage() {
                           )}
                         </p>
 
-                        <p className="text-sm font-semibold text-orange-500">
+                        <p className="text-sm font-semibold text-orange-500 lg:text-right">
                           Rp{" "}
                           {(
                             item.price *
@@ -573,7 +573,7 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="mt-8 space-y-4 border-t border-dashed border-gray-200 pt-6">
+              <div className="mt-6 space-y-3 border-t border-dashed border-gray-200 pt-5 lg:mt-8 lg:space-y-4 lg:pt-6">
 
                 <div className="flex items-center justify-between text-sm text-gray-500">
 
@@ -600,9 +600,9 @@ export default function CheckoutPage() {
               </div>
 
               {/* TOTAL */}
-              <div className="mt-8 border-t border-dashed border-gray-200 pt-6">
+              <div className="mt-6 border-t border-dashed border-gray-200 pt-5 lg:mt-8 lg:pt-6">
 
-                <div className="flex items-end justify-between gap-4">
+                <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between lg:gap-4">
 
                   <div>
 
@@ -610,13 +610,13 @@ export default function CheckoutPage() {
                       Total Pembayaran
                     </p>
 
-                    <h3 className="mt-1 text-2xl font-bold text-[#19398A]">
+                    <h3 className="mt-1 text-xl font-bold text-[#19398A] lg:text-2xl">
                       Total
                     </h3>
 
                   </div>
 
-                  <span className="text-3xl font-bold text-orange-500">
+                  <span className="break-words text-2xl font-bold text-orange-500 lg:text-3xl">
                     Rp{" "}
                     {totalPrice.toLocaleString(
                       "id-ID"
@@ -628,9 +628,9 @@ export default function CheckoutPage() {
               </div>
 
               {/* NOTE */}
-              <div className="mt-6 rounded-xl border border-orange-100 bg-orange-50 p-5">
+              <div className="mt-5 rounded-xl border border-orange-100 bg-orange-50 p-4 lg:mt-6 lg:p-5">
 
-                <p className="text-sm text-orange-600">
+                <p className="text-sm leading-6 text-orange-600">
                   Pastikan alamat dan nomor telepon aktif untuk mempermudah proses pengiriman pesanan.
                 </p>
 

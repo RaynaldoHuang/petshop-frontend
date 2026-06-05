@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { addToCart } from "@/lib/cart";
+import { toast } from "sonner";
 
 type AddToCartButtonProps = {
   product: {
@@ -27,7 +28,7 @@ export default function AddToCartButton({
     useState(false);
 
   const buttonClass =
-    "rounded-lg w-80 bg-orange-500 cursor-pointer px-6 py-3 text-sm font-medium text-white transition hover:bg-orange-600";
+    "w-full rounded-lg bg-orange-500 cursor-pointer px-6 py-3 text-sm font-medium text-white transition hover:bg-orange-600 sm:w-80";
 
   function handleAddToCart() {
 
@@ -44,6 +45,10 @@ export default function AddToCartButton({
       variantName:
         product.variantName || undefined,
     });
+
+    toast.success(
+      "Produk berhasil ditambahkan ke keranjang"
+    );
 
     setAdded(true);
 

@@ -66,16 +66,16 @@ export default function TopAnnouncementBar() {
 
   return (
     <div
-      className={`relative h-12 overflow-hidden border-b-3 ${active.bg_color} ${
+      className={`relative min-h-11 overflow-hidden border-b-3 md:h-12 ${active.bg_color} ${
         active.border_color || "border-gray-200"
       }`}
     >
       <div
         key={active.id}
-        className="absolute inset-0 flex animate-announcement-slide-up items-center justify-center gap-3 px-4 text-center"
+        className="absolute inset-0 flex animate-announcement-slide-up flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-3 py-2 text-center md:flex-nowrap md:gap-3 md:px-4 md:py-0"
       >
         <span
-          className={`text-sm font-semibold md:text-base ${active.text_color}`}
+          className={`text-xs font-semibold leading-4 md:text-base md:leading-normal ${active.text_color}`}
         >
           {active.text}
         </span>
@@ -83,7 +83,7 @@ export default function TopAnnouncementBar() {
         {active.link_text && active.link_href ? (
           <Link
             href={active.link_href}
-            className={`text-sm font-bold underline underline-offset-4 md:text-base ${active.text_color}`}
+            className={`text-xs font-bold leading-4 underline underline-offset-4 md:text-base md:leading-normal ${active.text_color}`}
           >
             {active.link_text}
           </Link>

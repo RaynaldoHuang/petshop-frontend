@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import {
-  ShieldCheck,
+  BadgeCheck,
+  Building2,
   ChevronRight,
   CircleAlert,
-  QrCode,
-  Copy,
-  BadgeCheck,
   Clock3,
-  Building2,
+  Copy,
 } from "lucide-react";
 
 import {
@@ -19,15 +18,7 @@ import {
   useState,
 } from "react";
 
-import {
-  useParams,
-} from "next/navigation";
-
 export default function PaymentPage() {
-
-  const params =
-    useParams<{ id: string }>();
-
   const [error, setError] =
     useState("");
 
@@ -40,20 +31,12 @@ export default function PaymentPage() {
   const [timeLeft, setTimeLeft] =
     useState("");
 
-  /*
-=========================================
-AUTO CHECK PAYMENT STATUS
-=========================================
-*/
   useEffect(() => {
-
     if (!paymentData?.id) return;
 
     const interval = setInterval(
       async () => {
-
         try {
-
           setCheckingStatus(true);
 
           const res = await fetch(
@@ -63,27 +46,15 @@ AUTO CHECK PAYMENT STATUS
           const data =
             await res.json();
 
-          /*
-          =========================================
-          SUCCESS
-          =========================================
-          */
-          if (
-            data.status === "paid"
-          ) {
-
+          if (data.status === "paid") {
             clearInterval(interval);
 
             window.location.href =
               "/checkout/success";
           }
-
         } catch (error) {
-
           console.log(error);
-
         } finally {
-
           setCheckingStatus(false);
         }
       },
@@ -92,16 +63,13 @@ AUTO CHECK PAYMENT STATUS
 
     return () =>
       clearInterval(interval);
-
   }, [paymentData]);
 
   useEffect(() => {
-
     if (!paymentData?.expires_at)
       return;
 
     const interval = setInterval(() => {
-
       const expiry =
         new Date(
           paymentData.expires_at
@@ -114,7 +82,6 @@ AUTO CHECK PAYMENT STATUS
         expiry - now;
 
       if (distance <= 0) {
-
         setTimeLeft(
           "Kadaluarsa"
         );
@@ -141,19 +108,12 @@ AUTO CHECK PAYMENT STATUS
       setTimeLeft(
         `${minutes}m ${seconds}s`
       );
-
     }, 1000);
 
     return () =>
       clearInterval(interval);
-
   }, [paymentData]);
 
-  /*
-  =========================================
-  LOAD PAYMENT DATA
-  =========================================
-  */
   useEffect(() => {
     async function loadPayment() {
       try {
@@ -173,7 +133,8 @@ AUTO CHECK PAYMENT STATUS
           `${process.env.NEXT_PUBLIC_API_URL}/payments/${transactionId}`
         );
 
-        const data = await res.json();
+        const data =
+          await res.json();
 
         if (!res.ok) {
           throw new Error(
@@ -195,18 +156,34 @@ AUTO CHECK PAYMENT STATUS
     loadPayment();
   }, []);
 
-  function copyText(text: string) {
+  function copyText(text?: string) {
+    if (!text) return;
 
     navigator.clipboard.writeText(text);
   }
 
-  return (
-    <main className="pb-16 pt-10">
+  const isQris =
+    paymentData?.type === "qris";
 
-      <div className="mx-auto max-w-7xl">
+  const paymentMethodLabel =
+    isQris
+      ? "QRIS"
+      : "Virtual Account";
+
+  const paymentStatusLabel =
+    checkingStatus
+      ? "Mengecek Pembayaran..."
+      : paymentData?.status === "paid"
+        ? "Pembayaran Berhasil"
+        : "Menunggu Pembayaran";
+
+  return (
+    <main className="bg-[#F8FAFC] pb-12 pt-5 lg:pb-16 lg:pt-8">
+
+      <div className="mx-auto max-w-7xl px-4 lg:px-0">
 
         {/* BREADCRUMB */}
-        <div className="mb-8 flex items-center gap-2 text-sm">
+        <div className="mb-4 flex flex-wrap items-center gap-1.5 text-xs lg:mb-6 lg:gap-2 lg:text-sm">
 
           <Link
             href="/"
@@ -238,338 +215,231 @@ AUTO CHECK PAYMENT STATUS
 
         </div>
 
+        {/* HEADER */}
+        <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-5  shadow-gray-100 lg:mb-6 lg:flex lg:items-center lg:justify-between lg:gap-8 lg:rounded-xl lg:p-7">
+          <div className="flex items-start gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-500">
+                Secure Payment
+              </p>
+
+              <h1 className="mt-2 text-2xl font-bold leading-tight text-[#19398A] lg:text-4xl">
+                Selesaikan Pembayaran
+              </h1>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500 lg:text-base lg:leading-7">
+                Bayar sesuai metode yang dipilih agar pesanan bisa diproses otomatis.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-500 lg:mt-0">
+            <Clock3 size={16} />
+            {paymentStatusLabel}
+          </div>
+
+        </div>
+
         {/* CONTENT */}
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.8fr]">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6">
 
-          {/* LEFT */}
-          <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white">
+          {/* PAYMENT */}
+          <div className="order-1 overflow-hidden rounded-2xl border border-gray-200 bg-white p-4  shadow-gray-100 lg:rounded-xl lg:p-7">
 
-            {/* TOP */}
-            <div className="relative overflow-hidden border-b border-gray-100 bg-gradient-to-br from-[#19398A] to-[#102766] px-8 py-10 text-white">
+            {error ? (
 
-              <div className="absolute right-0 top-0 h-52 w-52 rounded-full bg-white/10 blur-3xl" />
+              <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 lg:gap-4 lg:p-5">
 
-              <div className="relative z-10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white lg:h-11 lg:w-11">
+                  <CircleAlert size={22} />
+                </div>
 
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
+                <div>
+                  <h3 className="font-semibold text-red-500">
+                    Pembayaran Gagal
+                  </h3>
 
-                  {paymentData?.type === "qris" ? (
-                    <QrCode size={32} />
+                  <p className="mt-1 text-sm leading-6 text-red-400">
+                    {error}
+                  </p>
+                </div>
+
+              </div>
+
+            ) : null}
+
+            {isQris ? (
+
+              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 lg:rounded-xl lg:p-6">
+
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 lg:rounded-xl lg:p-8">
+
+                  {paymentData?.qr_url ? (
+                    <Image
+                      src={paymentData.qr_url}
+                      alt="QRIS"
+                      width={360}
+                      height={360}
+                      className="mx-auto w-full max-w-[260px] lg:max-w-[340px]"
+                      unoptimized
+                    />
                   ) : (
-                    <Building2 size={32} />
+                    <div className="flex min-h-[260px] items-center justify-center text-sm text-gray-400">
+                      Memuat QRIS...
+                    </div>
                   )}
 
                 </div>
 
-                <p className="mt-8 text-sm font-bold uppercase tracking-[0.2em] text-orange-300">
-                  Secure Payment
-                </p>
-
-                <h1 className="mt-3 text-4xl font-bold leading-tight">
-                  Selesaikan Pembayaran Pesananmu
-                </h1>
-
-                <p className="mt-5 max-w-xl leading-7 text-white/70">
-                  Selesaikan pembayaran sesuai metode yang dipilih untuk memproses pesanan secara otomatis.
-                </p>
-
-              </div>
-            </div>
-
-            {/* BODY */}
-            <div className="p-8">
-
-              {/* SECURITY */}
-              <div className="flex items-start gap-4 rounded-2xl border border-orange-100 bg-orange-50 p-5">
-
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white">
-
-                  <ShieldCheck
-                    size={24}
-                  />
-
-                </div>
-
-                <div>
-
-                  <h3 className="font-semibold text-[#19398A]">
-                    Pembayaran Aman
-                  </h3>
-
-                  <p className="mt-2 text-sm leading-7 text-gray-500">
-                    Semua transaksi dilindungi sistem keamanan Midtrans dan data pembayaran terenkripsi secara otomatis.
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* ERROR */}
-              {error ? (
-
-                <div className="mt-6 flex items-start gap-4 rounded-2xl border border-red-100 bg-red-50 p-5">
-
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white">
-
-                    <CircleAlert
-                      size={22}
-                    />
-
+                <div className="mt-5 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 lg:px-5 lg:py-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white">
+                    <Clock3 size={18} />
                   </div>
 
                   <div>
+                    <p className="text-xs font-medium text-red-400">
+                      Batas Pembayaran
+                    </p>
 
-                    <h3 className="font-semibold text-red-500">
-                      Pembayaran Gagal
+                    <p className="mt-1 text-lg font-bold text-red-500">
+                      {timeLeft || "-"}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+            ) : (
+
+              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 lg:rounded-xl lg:p-6">
+
+                <div className="flex items-center gap-3">
+
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white lg:h-12 lg:w-12">
+                    <Building2 size={22} />
+                  </div>
+
+                  <div>
+                    <h2 className="text-lg font-bold text-[#19398A] lg:text-xl">
+                      Virtual Account
+                    </h2>
+
+                    <p className="mt-1 text-sm leading-6 text-gray-500">
+                      Transfer sesuai nomor virtual account berikut.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-dashed border-orange-200 bg-white p-4 lg:mt-6 lg:rounded-xl lg:p-6">
+
+                  <p className="text-sm text-gray-400">
+                    Nomor Virtual Account
+                  </p>
+
+                  <div className="mt-3 flex items-center justify-between gap-3">
+
+                    <h3 className="min-w-0 break-all text-2xl font-bold tracking-wide text-[#19398A] lg:text-3xl">
+                      {paymentData?.va_number || "-"}
                     </h3>
 
-                    <p className="mt-1 text-sm leading-6 text-red-400">
-                      {error}
-                    </p>
+                    <button
+                      onClick={() =>
+                        copyText(paymentData?.va_number)
+                      }
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#19398A] transition hover:bg-gray-100 lg:h-12 lg:w-12"
+                      aria-label="Salin nomor virtual account"
+                    >
+                      <Copy size={18} />
+                    </button>
 
                   </div>
 
                 </div>
 
-              ) : null}
-
-              {/* PAYMENT CONTENT */}
-              <div className="mt-8">
-
-                {paymentData?.type === "qris" ? (
-
-                  <div className="rounded-3xl border border-gray-100 bg-gray-50 p-6">
-
-                    <div className="flex items-center gap-3">
-
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white">
-                        <QrCode size={22} />
-                      </div>
-
-                      <div>
-                        <h3 className="font-semibold text-[#19398A]">
-                          Scan QRIS
-                        </h3>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                          Gunakan aplikasi e-wallet atau mobile banking.
-                        </p>
-                      </div>
-
-                    </div>
-
-                    <div className="mt-6 overflow-hidden rounded-3xl border border-gray-200 bg-white p-5">
-
-                      <img
-                        src={paymentData.qr_url}
-                        alt="QRIS"
-                        className="mx-auto w-full max-w-[320px]"
-                      />
-
-                    </div>
-
+                <div className="mt-5 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 lg:px-5 lg:py-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white">
+                    <Clock3 size={18} />
                   </div>
 
-                ) : (
+                  <div>
+                    <p className="text-xs font-medium text-red-400">
+                      Batas Pembayaran
+                    </p>
 
-                  <div className="rounded-3xl border border-gray-100 bg-gray-50 p-6">
-
-                    <div className="flex items-center gap-3">
-
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white">
-                        <Building2 size={22} />
-                      </div>
-
-                      <div>
-                        <h3 className="font-semibold text-[#19398A]">
-                          Virtual Account
-                        </h3>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                          Transfer sesuai nomor virtual account berikut.
-                        </p>
-                      </div>
-
-                    </div>
-
-                    <div className="mt-6 rounded-3xl border border-dashed border-orange-200 bg-white p-6">
-
-                      <p className="text-sm text-gray-400">
-                        Nomor Virtual Account
-                      </p>
-
-                      <div className="mt-3 flex items-center justify-between gap-4">
-
-                        <h3 className="text-2xl font-bold tracking-wide text-[#19398A]">
-                          {paymentData?.va_number}
-                        </h3>
-
-                        <button
-                          onClick={() =>
-                            copyText(paymentData?.va_number)
-                          }
-                          className="flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 text-[#19398A] transition hover:bg-gray-100"
-                        >
-                          <Copy size={18} />
-                        </button>
-
-                      </div>
-
-                    </div>
-
+                    <p className="mt-1 text-lg font-bold text-red-500">
+                      {timeLeft || "-"}
+                    </p>
                   </div>
-
-                )}
+                </div>
 
               </div>
 
-            </div>
+            )}
+
           </div>
 
-          {/* RIGHT */}
-          <div className="h-fit rounded-3xl border border-gray-200 bg-white p-7 lg:sticky lg:top-6">
+          {/* SUMMARY */}
+          <div className="order-2 h-fit rounded-2xl border border-gray-200 bg-white p-5  shadow-gray-100 lg:sticky lg:top-6 lg:rounded-xl lg:p-7">
 
-            {/* TITLE */}
-            <h2 className="text-2xl font-bold text-[#19398A]">
+            <h2 className="text-xl font-bold text-[#19398A] lg:text-2xl">
               Informasi Pembayaran
             </h2>
 
-            {/* INFO */}
-            <div className="mt-8 space-y-5">
+            <div className="mt-5 space-y-4 lg:mt-8 lg:space-y-5">
 
-              <div className="rounded-2xl border border-gray-100 p-5">
-
+              <div className="rounded-2xl border border-gray-100 p-4 lg:p-5">
                 <p className="text-sm text-gray-400">
-                  Order ID
+                  Metode Pembayaran
                 </p>
 
-                <p className="mt-2 text-lg font-semibold text-[#19398A]">
-                  #{params.id}
+                <p className="mt-2 text-base font-semibold text-[#19398A] lg:text-lg">
+                  {paymentMethodLabel}
                 </p>
-
               </div>
 
-              <div className="rounded-2xl border border-gray-100 p-5">
-
-                <p className="text-sm text-gray-400">
-                  Payment Gateway
-                </p>
-
-                <p className="mt-2 text-lg font-semibold text-[#19398A]">
-                  {paymentData?.type === "qris"
-                    ? "QRIS"
-                    : "Virtual Account"}
-                </p>
-
-              </div>
-
-              <div className="rounded-2xl border border-gray-100 p-5">
-
+              <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4 lg:p-5">
                 <p className="text-sm text-gray-400">
                   Total Pembayaran
                 </p>
 
-                <p className="mt-2 text-3xl font-bold text-orange-500">
+                <p className="mt-2 break-words text-2xl font-bold text-orange-500 lg:text-3xl">
                   Rp {Number(paymentData?.gross_amount || 0).toLocaleString("id-ID")}
                 </p>
-
               </div>
 
-              <div className="rounded-2xl border border-gray-100 p-5">
-
+              <div className="rounded-2xl border border-gray-100 p-4 lg:p-5">
                 <p className="text-sm text-gray-400">
                   Status
                 </p>
 
-                <div className="rounded-2xl border border-red-100 bg-red-50 p-5">
-
-                  <p className="text-sm text-gray-400">
-                    Batas Pembayaran
-                  </p>
-
-                  <p className="mt-2 text-xl font-bold text-red-500">
-                    {timeLeft}
-                  </p>
-
-                </div>
-
                 <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-500">
-
                   <Clock3 size={14} />
-
-                  {checkingStatus
-                    ? "Mengecek Pembayaran..."
-                    : paymentData?.status === "paid"
-                      ? "Pembayaran Berhasil"
-                      : "Menunggu Pembayaran"}
-
+                  {paymentStatusLabel}
                 </div>
-
               </div>
 
-              <div className="rounded-2xl border border-green-100 bg-green-50 p-5">
-
+              <div className="rounded-2xl border border-green-100 bg-green-50 p-4 lg:p-5">
                 <div className="flex items-start gap-3">
-
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-500 text-white">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500 text-white lg:h-11 lg:w-11">
                     <BadgeCheck size={20} />
                   </div>
 
                   <div>
-
                     <h3 className="font-semibold text-green-700">
                       Pembayaran Otomatis
                     </h3>
 
-                    <p className="mt-2 text-sm leading-7 text-green-600">
-                      Setelah pembayaran berhasil diverifikasi Midtrans, status pesanan akan otomatis berubah menjadi dibayar.
+                    <p className="mt-2 text-sm leading-6 text-green-600 lg:leading-7">
+                      Status pesanan otomatis berubah setelah pembayaran terverifikasi.
                     </p>
-
                   </div>
-
                 </div>
-
               </div>
-
-            </div>
-
-            {/* AUTO CHECK */}
-            <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-5">
-
-              <div className="flex items-start gap-3">
-
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white">
-
-                  <Clock3 size={20} />
-
-                </div>
-
-                <div>
-
-                  <h3 className="font-semibold text-blue-700">
-                    Auto Verifikasi Pembayaran
-                  </h3>
-
-                  <p className="mt-2 text-sm leading-7 text-blue-600">
-                    Sistem akan otomatis mengecek status pembayaran setiap beberapa detik.
-                  </p>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* NOTE */}
-            <div className="mt-8 rounded-2xl border border-orange-100 bg-orange-50 p-5">
-
-              <p className="text-sm leading-7 text-orange-600">
-                Halaman ini akan otomatis mendeteksi pembayaran setelah transaksi berhasil dilakukan.
-              </p>
 
             </div>
 
           </div>
+
         </div>
       </div>
     </main>

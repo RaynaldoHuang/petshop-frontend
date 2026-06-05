@@ -61,10 +61,10 @@ export default function HeroSlider({ heroes }: Props) {
     const activeHero = heroes[activeIndex];
 
     return (
-        <section className="mx-auto max-w-360 mt-6 px-4 md:px-8">
+        <section className="mx-auto mt-4 max-w-360 px-4 md:px-8 lg:mt-6">
             <div className="grid gap-5 lg:grid-cols-2">
                 {/* ================= LEFT CAROUSEL ================= */}
-                <div className="relative min-h-140 overflow-hidden rounded-xl bg-[#F4F6FB]">
+                <div className="relative h-[240px] overflow-hidden rounded-xl bg-[#F4F6FB] sm:h-[320px] lg:h-auto lg:min-h-140">
                     {/* CLICKABLE IMAGE */}
                     <Link
                         href={activeHero.link || "/products"}
@@ -88,7 +88,7 @@ export default function HeroSlider({ heroes }: Props) {
                             <button
                                 type="button"
                                 onClick={prevSlide}
-                                className="absolute left-6 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white cursor-pointer shadow-xs"
+                                className="absolute left-3 top-1/2 z-30 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white shadow-xs lg:left-6 lg:h-11 lg:w-11"
                             >
                                 <ChevronLeft className="text-[#19398A]" />
                             </button>
@@ -96,7 +96,7 @@ export default function HeroSlider({ heroes }: Props) {
                             <button
                                 type="button"
                                 onClick={nextSlide}
-                                className="absolute right-6 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white cursor-pointer shadow-xs"
+                                className="absolute right-3 top-1/2 z-30 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white shadow-xs lg:right-6 lg:h-11 lg:w-11"
                             >
                                 <ChevronRight className="text-[#19398A]" />
                             </button>
@@ -105,13 +105,13 @@ export default function HeroSlider({ heroes }: Props) {
 
                     {/* DOTS */}
                     {heroes.length > 1 && (
-                        <div className="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 gap-2">
+                        <div className="absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 gap-2 lg:bottom-6">
                             {heroes.map((hero, index) => (
                                 <button
                                     key={hero.id}
                                     type="button"
                                     onClick={() => setActiveIndex(index)}
-                                    className={`h-3 w-3 rounded-full transition ${activeIndex === index
+                                    className={`h-2.5 w-2.5 rounded-full transition lg:h-3 lg:w-3 ${activeIndex === index
                                         ? "bg-[#19398A]"
                                         : "bg-white/50"
                                         }`}
@@ -122,7 +122,7 @@ export default function HeroSlider({ heroes }: Props) {
                 </div>
 
                 {/* ================= RIGHT STATIC ================= */}
-                <div className="grid gap-5">
+                <div className="hidden gap-5 lg:grid">
                     {/* DOG SUPPLIES */}
                     <div className="relative min-h-50 overflow-hidden rounded-xl bg-[#fcebd3]">
                         <Image

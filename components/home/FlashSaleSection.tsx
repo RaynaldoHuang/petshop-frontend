@@ -141,13 +141,13 @@ export default function FlashSaleSection() {
     }
 
     return (
-        <section className="pt-16 pb-4">
-            <div className="bg-[#DFF1FF] py-3">
+        <section className="pb-4 pt-10 lg:pt-16">
+            <div className="bg-[#DFF1FF] py-2.5 lg:py-3">
                 <Marquee speed={55} gradient={false}>
                     {[...Array(10)].map((_, index) => (
                         <p
                             key={index}
-                            className="mx-10 text-sm font-semibold uppercase text-[#19398A]"
+                            className="mx-6 text-xs font-semibold uppercase text-[#19398A] lg:mx-10 lg:text-sm"
                         >
                             DEAL OF THE WEEK!
                         </p>
@@ -155,64 +155,64 @@ export default function FlashSaleSection() {
                 </Marquee>
             </div>
 
-            <div className="relative mx-auto max-w-7xl py-12">
+            <div className="relative mx-auto max-w-7xl px-4 py-8 lg:px-0 lg:py-12">
                 {/* SLIDE 1 PRODUCT FULL CONTENT */}
                 <div
                     key={sale.id}
-                    className="grid animate-flash-slide gap-10 lg:grid-cols-2"
+                    className="grid animate-flash-slide gap-6 lg:grid-cols-2 lg:gap-10"
                 >
                     {/* IMAGE */}
-                    <div className="relative min-h-140 overflow-hidden rounded-2xl bg-[#F5F7FB]">
+                    <div className="relative h-[260px] overflow-hidden rounded-2xl bg-[#F5F7FB] sm:h-[340px] lg:h-auto lg:min-h-140">
                         <Image
                             src={getImageUrl(product.image)}
                             alt={product.name}
                             fill
-                            className="object-contain p-10"
+                            className="object-contain p-6 lg:p-10"
                             unoptimized
                         />
                     </div>
 
                     {/* CONTENT */}
                     <div className="flex flex-col justify-center">
-                        <span className="mb-5 w-fit rounded bg-red-600 px-3 py-1 text-sm font-bold text-white">
+                        <span className="mb-4 w-fit rounded bg-red-600 px-3 py-1 text-xs font-bold text-white lg:mb-5 lg:text-sm">
                             Flash Sale
                         </span>
 
-                        <div className="mb-5 flex items-center gap-2 text-[#19398A]">
-                            <Zap size={22} />
-                            <h2 className="text-2xl font-extrabold">
+                        <div className="mb-4 flex items-center gap-2 text-[#19398A] lg:mb-5">
+                            <Zap className="h-5 w-5 lg:h-[22px] lg:w-[22px]" />
+                            <h2 className="text-lg font-extrabold lg:text-2xl">
                                 Hurry up! Sale end in
                             </h2>
                         </div>
 
-                        <div className="mb-8 flex flex-wrap items-center gap-3 text-[#19398A]">
+                        <div className="mb-6 grid grid-cols-4 gap-2 text-[#19398A] lg:mb-8 lg:flex lg:flex-wrap lg:items-center lg:gap-3">
                             {[
                                 String(timeLeft.days).padStart(2, "0"),
                                 String(timeLeft.hours).padStart(2, "0"),
                                 String(timeLeft.minutes).padStart(2, "0"),
                                 String(timeLeft.seconds).padStart(2, "0"),
                             ].map((item, index) => (
-                                <div key={index} className="flex items-center gap-3">
-                                    <div className="rounded-lg border border-[#19398A]/30 bg-white px-4 py-3 text-3xl font-extrabold">
+                                <div key={index} className="flex min-w-0 items-center gap-3">
+                                    <div className="flex h-14 min-w-0 flex-1 items-center justify-center rounded-lg border border-[#19398A]/30 bg-white px-2 text-xl font-extrabold lg:h-auto lg:flex-none lg:px-4 lg:py-3 lg:text-3xl">
                                         {item}
                                     </div>
                                     {index < 3 ? (
-                                        <span className="text-2xl font-bold">:</span>
+                                        <span className="hidden text-2xl font-bold lg:inline">:</span>
                                     ) : null}
                                 </div>
                             ))}
                         </div>
 
-                        <h3 className="text-4xl font-extrabold text-[#19398A]">
+                        <h3 className="text-2xl font-extrabold leading-tight text-[#19398A] lg:text-4xl">
                             {product.name}
                         </h3>
 
-                        <div className="mt-6">
+                        <div className="mt-4 lg:mt-6">
                             <p className="text-sm font-medium text-gray-400 line-through">
                                 {formatPrice(product.price)}
                             </p>
 
-                            <p className="text-3xl font-extrabold text-red-600">
+                            <p className="text-2xl font-extrabold text-red-600 lg:text-3xl">
                                 {formatPrice(sale.discount_price)}
                             </p>
 
@@ -223,13 +223,13 @@ export default function FlashSaleSection() {
                             ) : null}
                         </div>
 
-                        <div className="mt-6 flex items-center gap-2 text-sm font-bold text-emerald-600">
+                        <div className="mt-5 flex items-center gap-2 text-sm font-bold text-emerald-600 lg:mt-6">
                             <CheckCircle size={18} />
                             {product.stock > 0 ? "In stock!" : "Out of stock"}
                         </div>
 
-                        <div className="mt-8 flex gap-4">
-                            <div className="flex h-14 w-36 items-center justify-between rounded-xl bg-gray-100 px-5">
+                        <div className="mt-6 flex gap-3 lg:mt-8 lg:gap-4">
+                            <div className="hidden h-14 w-36 items-center justify-between rounded-xl bg-gray-100 px-5 sm:flex">
                                 <button
                                     type="button"
                                     onClick={() => setQty((prev) => Math.max(1, prev - 1))}
@@ -251,7 +251,7 @@ export default function FlashSaleSection() {
 
                             <Link
                                 href={`/products/${product.slug}`}
-                                className="flex h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 text-sm font-bold text-white transition hover:bg-emerald-700"
+                                className="flex h-[52px] min-h-[52px] flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 text-sm font-bold text-white transition hover:bg-emerald-700 lg:h-14 lg:min-h-14"
                             >
                                 <ShoppingCart size={20} />
                                 View product
@@ -266,7 +266,7 @@ export default function FlashSaleSection() {
                         <button
                             type="button"
                             onClick={prevSlide}
-                            className="absolute -left-6 top-1/2 z-30 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-sm"
+                            className="absolute -left-6 top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-sm lg:flex"
                         >
                             <ChevronLeft className="text-[#19398A]" />
                         </button>
@@ -274,12 +274,12 @@ export default function FlashSaleSection() {
                         <button
                             type="button"
                             onClick={nextSlide}
-                            className="absolute -right-6 top-1/2 z-30 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-sm"
+                            className="absolute -right-6 top-1/2 z-30 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-sm lg:flex"
                         >
                             <ChevronRight className="text-[#19398A]" />
                         </button>
 
-                        <div className="mt-8 flex justify-center gap-2">
+                        <div className="mt-6 flex justify-center gap-2 lg:mt-8">
                             {flashSales.map((item, index) => (
                                 <button
                                     key={item.id}
@@ -299,12 +299,12 @@ export default function FlashSaleSection() {
                 ) : null}
             </div>
 
-            <div className="bg-[#DFF1FF] py-3">
+            <div className="bg-[#DFF1FF] py-2.5 lg:py-3">
                 <Marquee speed={55} direction="right" gradient={false}>
                     {[...Array(10)].map((_, index) => (
                         <p
                             key={index}
-                            className="mx-10 text-sm font-semibold uppercase text-[#19398A]"
+                            className="mx-6 text-xs font-semibold uppercase text-[#19398A] lg:mx-10 lg:text-sm"
                         >
                             DEAL OF THE WEEK!
                         </p>

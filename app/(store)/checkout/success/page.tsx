@@ -1,165 +1,139 @@
 "use client";
 
 import Link from "next/link";
-import { clearCart } from "@/lib/cart";
 
 import {
-  CheckCircle2,
-  ShoppingBag,
-  ReceiptText,
   ArrowRight,
+  BadgeCheck,
+  CheckCircle2,
+  Home,
+  ReceiptText,
+  ShoppingBag,
 } from "lucide-react";
 
 import {
   useEffect,
-  useState,
 } from "react";
 
 import {
-  useParams,
-} from "next/navigation";
+  clearCart,
+} from "@/lib/cart";
 
 export default function CheckoutSuccessPage() {
-
-  const params =
-    useParams<{ id: string }>();
-
-  const [paymentStatus, setPaymentStatus] =
-    useState("paid");
-
-  /*
-  =========================================
-  CLEAR CART
-  =========================================
-  */
   useEffect(() => {
     clearCart();
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#f8fafc] px-4 py-12">
+    <main className="min-h-screen bg-[#F8FAFC] px-4 py-8 lg:px-0 lg:py-14">
 
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
 
-        {/* SUCCESS CARD */}
-        <div className="overflow-hidden rounded-[32px] border border-gray-200 bg-white shadow-sm">
+        <div className="grid overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm shadow-gray-100 lg:grid-cols-[0.9fr_1.1fr] lg:rounded-xl">
 
-          {/* TOP */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#19398A] to-[#102766] px-8 py-14 text-center text-white">
+          {/* HERO */}
+          <section className="relative overflow-hidden bg-[#19398A] px-6 py-10 text-white lg:px-9 lg:py-12">
 
-            <div className="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -bottom-24 left-6 h-60 w-60 rounded-full bg-orange-400/20 blur-3xl" />
 
-            <div className="relative z-10">
+            <div className="relative z-10 flex h-full flex-col justify-between gap-10">
 
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-white/10 backdrop-blur-md">
+              <div>
 
-                <CheckCircle2
-                  size={54}
-                  className="text-green-300"
-                />
-
-              </div>
-
-              <p className="mt-8 text-sm font-bold uppercase tracking-[0.25em] text-orange-300">
-                Payment Success
-              </p>
-
-              <h1 className="mt-4 text-4xl font-bold">
-                Pembayaran Berhasil
-              </h1>
-
-              <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-white/70">
-                Terima kasih, pesanan kamu berhasil diproses dan pembayaran telah diterima.
-              </p>
-
-            </div>
-          </div>
-
-          {/* CONTENT */}
-          <div className="p-8">
-
-            {/* ORDER INFO */}
-            <div className="grid gap-5 md:grid-cols-2">
-
-              {/* ORDER ID */}
-              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
-
-                <p className="text-sm text-gray-400">
-                  Nomor Order
-                </p>
-
-                <h3 className="mt-3 text-2xl font-bold text-[#19398A]">
-                  #{params.id}
-                </h3>
-
-              </div>
-
-              {/* STATUS */}
-              <div className="rounded-2xl border border-green-100 bg-green-50 p-6">
-
-                <p className="text-sm text-green-600">
-                  Status Pembayaran
-                </p>
-
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-green-500 px-4 py-2 text-sm font-semibold text-white">
-
-                  <CheckCircle2 size={18} />
-
-                  {paymentStatus === "paid"
-                    ? "Sudah Dibayar"
-                    : "Pending"}
-
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md lg:h-20 lg:w-20">
+                  <CheckCircle2 className="h-10 w-10 text-green-300 lg:h-12 lg:w-12" />
                 </div>
 
+                <p className="mt-7 text-xs font-bold uppercase tracking-[0.18em] text-orange-300">
+                  Payment Success
+                </p>
+
+                <h1 className="mt-3 text-3xl font-bold leading-tight lg:text-5xl">
+                  Pembayaran Berhasil
+                </h1>
+
+                <p className="mt-4 max-w-md text-sm leading-7 text-white/75 lg:text-base lg:leading-8">
+                  Terima kasih. Pesanan kamu sudah masuk dan akan segera diproses oleh tim kami.
+                </p>
+
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-md">
+                <div className="flex items-start gap-3">
+                  <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-green-300" />
+
+                  <p className="text-sm leading-6 text-white/80">
+                    Status pembayaran sudah diterima. Kamu bisa melihat detail pesanan dari halaman pesanan.
+                  </p>
+                </div>
               </div>
 
             </div>
 
-            {/* NOTE */}
-            <div className="mt-8 rounded-2xl border border-orange-100 bg-orange-50 p-6">
+          </section>
 
-              <h3 className="font-semibold text-orange-600">
-                Informasi Pesanan
+          {/* CONTENT */}
+          <section className="p-5 lg:p-9">
+
+            <div className="rounded-2xl border border-green-100 bg-green-50 p-4 lg:p-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-500 text-white">
+                  <CheckCircle2 size={22} />
+                </div>
+
+                <div>
+                  <p className="text-sm text-green-600">
+                    Status Pembayaran
+                  </p>
+
+                  <h2 className="mt-1 text-lg font-bold text-green-700">
+                    Sudah Dibayar
+                  </h2>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50 p-4 lg:p-5">
+              <h3 className="text-lg font-bold text-[#19398A]">
+                Pesanan Sedang Diproses
               </h3>
 
-              <p className="mt-3 text-sm leading-7 text-orange-500">
-                Tim kami akan segera memproses pesananmu. Pastikan nomor telepon tetap aktif untuk proses konfirmasi dan pengiriman.
+              <p className="mt-2 text-sm leading-7 text-gray-500">
+                Kami akan menyiapkan pesananmu. Pastikan nomor telepon tetap aktif untuk konfirmasi dan informasi pengiriman.
               </p>
-
             </div>
 
-            {/* BUTTONS */}
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
 
-              {/* ORDER */}
               <Link
                 href="/orders"
-                className="flex h-14 items-center justify-center gap-3 rounded-2xl border border-[#19398A] bg-white text-sm font-semibold text-[#19398A] transition hover:bg-[#19398A] hover:text-white"
+                className="flex h-13 min-h-13 items-center justify-center gap-2 rounded-xl border border-[#19398A] bg-white px-4 text-sm font-semibold text-[#19398A] transition hover:bg-[#19398A] hover:text-white"
               >
-
-                <ReceiptText size={20} />
-
+                <ReceiptText size={19} />
                 Lihat Pesanan
-
               </Link>
 
-              {/* SHOPPING */}
               <Link
                 href="/products"
-                className="flex h-14 items-center justify-center gap-3 rounded-2xl bg-orange-500 text-sm font-semibold text-white transition hover:bg-orange-600"
+                className="flex h-13 min-h-13 items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white transition hover:bg-orange-600"
               >
-
-                <ShoppingBag size={20} />
-
+                <ShoppingBag size={19} />
                 Kembali Belanja
-
-                <ArrowRight size={18} />
-
+                <ArrowRight size={17} />
               </Link>
 
             </div>
 
-          </div>
+            <Link
+              href="/"
+              className="mt-4 flex h-12 items-center justify-center gap-2 rounded-2xl text-sm font-semibold text-gray-500 transition hover:bg-gray-50 hover:text-[#19398A]"
+            >
+              <Home size={18} />
+              Kembali ke Beranda
+            </Link>
+
+          </section>
 
         </div>
 

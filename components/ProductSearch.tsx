@@ -15,6 +15,15 @@ type Product = {
   image: string | null;
 };
 
+type ProductSearchProps = {
+  autoFocus?: boolean;
+  className?: string;
+  dropdownClassName?: string;
+  inputClassName?: string;
+  usePlaceholderLabel?: boolean;
+  onResultClick?: () => void;
+};
+
 function getImageUrl(image: string | null) {
   if (!image || image.trim() === "") {
     return "/pet-placeholder.jpg";
@@ -27,7 +36,14 @@ function getImageUrl(image: string | null) {
   return `http://localhost:8000/storage/${image}`;
 }
 
-export default function ProductSearch() {
+export default function ProductSearch({
+  autoFocus = false,
+  className = "relative hidden lg:block",
+  dropdownClassName = "absolute right-0 top-[calc(100%+14px)] z-50 w-105 overflow-hidden rounded-lg border border-gray-100 bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]",
+  inputClassName = "h-13 w-82 rounded-xl",
+  usePlaceholderLabel = false,
+  onResultClick,
+}: ProductSearchProps) {
   const [keyword, setKeyword] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [open, setOpen] = useState(false);
@@ -36,6 +52,15 @@ export default function ProductSearch() {
 
   const wrapperRef =
     useRef<HTMLDivElement | null>(null);
+
+  const inputRef =
+    useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (autoFocus) {
+      inputRef.current?.focus();
+    }
+  }, [autoFocus]);
 
   /*
   =========================================
@@ -121,11 +146,11 @@ export default function ProductSearch() {
   return (
     <div
       ref={wrapperRef}
-      className="relative hidden lg:block"
+      className={className}
     >
       {/* SEARCH INPUT */}
       <div
-        className={`flex h-13 w-82 items-center gap-3 rounded-xl border bg-gray-100 px-4 text-[#19398A] transition-all duration-300 ${focused
+        className={`flex items-center gap-3 border bg-gray-100 px-4 text-[#19398A] transition-all duration-300 ${inputClassName} ${focused
           ? "border-orange-300 bg-white shadow-[0_0_0_1px_rgba(251,146,60,0.15)]"
           : "border-transparent hover:border-gray-200"
           }`}
@@ -142,17 +167,20 @@ export default function ProductSearch() {
         {/* INPUT WRAPPER */}
         <div className="relative flex h-full flex-1 items-center">
           {/* FLOAT LABEL */}
-          <span
-            className={`pointer-events-none absolute left-0 transition-all duration-200 ${focused || keyword
-              ? "top-2 text-[11px] font-semibold text-orange-500"
-              : "top-1/2 -translate-y-1/2 text-sm font-medium text-[#19398A]/70"
-              }`}
-          >
-            Cari produkmu disini ...
-          </span>
+          {!usePlaceholderLabel ? (
+            <span
+              className={`pointer-events-none absolute left-0 transition-all duration-200 ${focused || keyword
+                ? "top-2 text-[11px] font-semibold text-orange-500"
+                : "top-1/2 -translate-y-1/2 text-sm font-medium text-[#19398A]/70"
+                }`}
+            >
+              Cari produkmu disini ...
+            </span>
+          ) : null}
 
           {/* INPUT */}
           <input
+            ref={inputRef}
             value={keyword}
             onChange={(e) =>
               setKeyword(e.target.value)
@@ -169,8 +197,14 @@ export default function ProductSearch() {
                 setFocused(false);
               }
             }}
-            placeholder=""
-            className={`w-full bg-transparent font-semibold text-[#19398A] outline-none transition-all ${focused || keyword
+            placeholder={
+              usePlaceholderLabel
+                ? "Cari produkmu disini ..."
+                : ""
+            }
+            className={`w-full bg-transparent font-semibold text-[#19398A] outline-none transition-all placeholder:text-[#19398A]/50 ${usePlaceholderLabel
+              ? "pt-0 text-sm opacity-100"
+              : focused || keyword
               ? "pt-5 text-sm opacity-100"
               : "pt-0 text-lg opacity-0"
               }`}
@@ -180,7 +214,7 @@ export default function ProductSearch() {
 
       {/* DROPDOWN */}
       {open ? (
-        <div className="absolute right-0 top-[calc(100%+14px)] z-50 w-105 overflow-hidden rounded-lg border border-gray-100 bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]">
+        <div className={dropdownClassName}>
           {/* HEADER */}
           <div className="border-b border-gray-100 px-5 py-4">
             <h3 className="text-sm font-bold uppercase text-[#19398A]">
@@ -213,6 +247,7 @@ export default function ProductSearch() {
                       setProducts([]);
                       setOpen(false);
                       setFocused(false);
+                      onResultClick?.();
                     }}
                     className="flex w-full items-center gap-4 overflow-hidden rounded-lg p-3 transition hover:bg-orange-50"
                   >
@@ -267,6 +302,7 @@ export default function ProductSearch() {
                 setProducts([]);
                 setOpen(false);
                 setFocused(false);
+                onResultClick?.();
               }}
               className="text-sm font-medium text-[#19398A] underline underline-offset-4 transition hover:text-orange-500"
             >

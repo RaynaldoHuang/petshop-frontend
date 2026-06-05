@@ -85,30 +85,30 @@ export default function HomeProductSection() {
     }, [products, activeCategory]);
 
     return (
-        <section className="py-20">
-            <div className="mx-auto max-w-7xl">
-                <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <section className="py-12 lg:py-20">
+            <div className="mx-auto max-w-7xl px-4 lg:px-0">
+                <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between lg:mb-10 lg:gap-5">
                     <div>
-                        <p className="text-sm font-bold uppercase tracking-wide text-orange-500">
+                        <p className="text-xs font-bold uppercase tracking-wide text-orange-500 lg:text-sm">
                             Our Products
                         </p>
 
-                        <h2 className="mt-2 text-4xl font-bold text-[#19398A]">
+                        <h2 className="mt-2 text-2xl font-bold text-[#19398A] lg:text-4xl">
                             Popular Pet Essentials
                         </h2>
 
-                        <p className="mt-3 max-w-xl text-gray-500">
+                        <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500 lg:mt-3 lg:text-base lg:leading-normal">
                             Pilih kebutuhan terbaik untuk hewan kesayangan kamu.
                         </p>
                     </div>
                 </div>
 
-                <div className="mb-10 flex items-center justify-between">
-                    <div className="flex flex-wrap gap-3">
+                <div className="mb-8 flex flex-col gap-4 lg:mb-10 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:gap-3 lg:overflow-visible lg:px-0 lg:pb-0">
                         <button
                             type="button"
                             onClick={() => setActiveCategory("all")}
-                            className={`rounded-full px-5 py-3 text-sm font-medium transition cursor-pointer ${activeCategory === "all"
+                            className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-medium transition cursor-pointer lg:px-5 lg:py-3 lg:text-sm ${activeCategory === "all"
                                 ? "bg-[#19398A] text-white"
                                 : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
                                 }`}
@@ -121,7 +121,7 @@ export default function HomeProductSection() {
                                 type="button"
                                 key={category.id}
                                 onClick={() => setActiveCategory(category.id)}
-                                className={`rounded-full px-5 py-3 text-sm font-medium transition cursor-pointer ${activeCategory === category.id
+                                className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-medium transition cursor-pointer lg:px-5 lg:py-3 lg:text-sm ${activeCategory === category.id
                                     ? "bg-[#19398A] text-white"
                                     : "bg-gray-100 text-[#19398A] hover:bg-orange-100"
                                     }`}
@@ -133,22 +133,22 @@ export default function HomeProductSection() {
 
                     <Link
                         href="/products"
-                        className="text-sm font-semibold text-[#19398A] underline underline-offset-4 hover:text-orange-500"
+                        className="hidden text-sm font-semibold text-[#19398A] underline underline-offset-4 hover:text-orange-500 lg:block"
                     >
                         Lihat Semua Produk
                     </Link>
                 </div>
 
                 {loading ? (
-                    <p className="text-gray-500">Loading products...</p>
+                    <p className="py-8 text-sm text-gray-500 lg:text-base">Loading products...</p>
                 ) : filteredProducts.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
-                        <p className="font-semibold text-gray-700">
+                    <div className="rounded-2xl border border-dashed border-gray-300 p-6 text-center lg:p-10">
+                        <p className="text-sm font-semibold text-gray-700 lg:text-base">
                             Produk kategori ini belum tersedia.
                         </p>
                     </div>
                 ) : (
-                    <div className="grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-7 lg:grid-cols-5 lg:gap-x-4 lg:gap-y-8">
                         {filteredProducts.map((product) => {
                             const flashPrice =
                                 product.flash_sale &&
@@ -175,15 +175,15 @@ export default function HomeProductSection() {
                                     className="group overflow-hidden rounded-t-2xl bg-white transition duration-300 hover:-translate-y-1"
                                 >
                                     <Link href={`/products/${product.slug}`}>
-                                        <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100">
+                                        <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100 lg:rounded-2xl">
 
                                             {/* BADGE */}
                                             {isFlashSale ? (
-                                                <div className="absolute left-3 top-3 z-20 rounded-full bg-red-600 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white">
+                                                <div className="absolute left-2 top-2 z-20 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white lg:left-3 lg:top-3 lg:px-3 lg:text-[11px]">
                                                     Flash Sale
                                                 </div>
                                             ) : isNormalSale ? (
-                                                <div className="absolute left-3 top-3 z-20 rounded-full bg-orange-500 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white">
+                                                <div className="absolute left-2 top-2 z-20 rounded-full bg-orange-500 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white lg:left-3 lg:top-3 lg:px-3 lg:text-[11px]">
                                                     Sale
                                                 </div>
                                             ) : null}
@@ -197,23 +197,23 @@ export default function HomeProductSection() {
                                         </div>
                                     </Link>
 
-                                    <div className="pt-4">
+                                    <div className="pt-3 lg:pt-4">
                                         {/* TITLE */}
-                                        <h3 className="line-clamp-2 font-medium text-[#19398A] truncate">
+                                        <h3 className="line-clamp-2 text-sm font-medium leading-5 text-[#19398A] lg:truncate lg:text-base lg:leading-normal">
                                             {product.name}
                                         </h3>
 
                                         {/* PRICE */}
-                                        <div className="mt-3">
+                                        <div className="mt-1.5 lg:mt-3">
                                             {hasDiscount ? (
                                                 <>
-                                                    <p className="text-sm font-medium text-gray-400 line-through">
+                                                    <p className="text-xs font-medium text-gray-400 line-through lg:text-sm">
                                                         Rp{" "}
                                                         {Number(product.price).toLocaleString("id-ID")}
                                                     </p>
 
                                                     <p
-                                                        className={`text-lg font-bold ${isFlashSale
+                                                        className={`text-base font-bold lg:text-lg ${isFlashSale
                                                             ? "text-red-600"
                                                             : "text-orange-500"
                                                             }`}
@@ -223,7 +223,7 @@ export default function HomeProductSection() {
                                                     </p>
                                                 </>
                                             ) : (
-                                                <p className="text-lg font-bold text-orange-500">
+                                                <p className="text-base font-bold text-orange-500 lg:text-lg">
                                                     Rp{" "}
                                                     {Number(product.price).toLocaleString("id-ID")}
                                                 </p>
@@ -231,7 +231,7 @@ export default function HomeProductSection() {
                                         </div>
 
                                         {/* SOLD */}
-                                        <p className="mt-1 text-xs font-normal text-gray-500">
+                                        <p className="mt-1 text-[11px] font-normal text-gray-500 lg:text-xs">
                                             {product.sold_count ?? 0} terjual
                                         </p>
                                     </div>
@@ -240,6 +240,13 @@ export default function HomeProductSection() {
                         })}
                     </div>
                 )}
+
+                <Link
+                    href="/products"
+                    className="mx-auto mt-8 flex w-fit text-sm font-semibold text-[#19398A] underline underline-offset-4 transition active:text-orange-500 lg:hidden"
+                >
+                    Lihat Semua Produk
+                </Link>
             </div>
         </section>
     );

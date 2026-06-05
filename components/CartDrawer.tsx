@@ -139,7 +139,7 @@ export default function CartDrawer({
 
       {/* DRAWER */}
       <aside
-        className={`fixed right-0 top-0 z-100 h-screen w-full max-w-xl overflow-hidden bg-white shadow-2xl transition-transform duration-300 ${open
+        className={`fixed right-0 top-0 z-100 h-dvh w-full overflow-hidden bg-white shadow-2xl transition-transform duration-300 sm:max-w-xl ${open
           ? "translate-x-0"
           : "translate-x-full"
           }`}
@@ -148,10 +148,10 @@ export default function CartDrawer({
         <div className="flex h-full flex-col">
 
           {/* HEADER */}
-          <div className="border-b border-gray-100 px-6 py-5">
+          <div className="border-b border-gray-100 px-4 py-4 sm:px-6 sm:py-5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-[#19398A]">
+                <h2 className="text-xl font-bold text-[#19398A] sm:text-2xl">
                   Keranjang Belanja
                 </h2>
 
@@ -175,7 +175,7 @@ export default function CartDrawer({
               {/* CLOSE */}
               <button
                 onClick={onClose}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-[#19398A] transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-500"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-[#19398A] transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-500 sm:h-11 sm:w-11"
               >
                 <X size={22} />
               </button>
@@ -186,16 +186,16 @@ export default function CartDrawer({
           {/* EMPTY */}
           {cartItems.length ===
             0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-              <div className="flex h-28 w-28 items-center justify-center rounded-full bg-orange-50">
+            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center sm:px-8">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 sm:h-28 sm:w-28">
                 <ShoppingCart
-                  size={56}
+                  size={48}
                   className="text-orange-500"
                 />
 
               </div>
 
-              <h2 className="mt-8 text-3xl font-bold text-[#19398A]">
+              <h2 className="mt-6 text-2xl font-bold text-[#19398A] sm:mt-8 sm:text-3xl">
                 Keranjang Masih Kosong
               </h2>
 
@@ -206,7 +206,7 @@ export default function CartDrawer({
               <Link
                 href="/products"
                 onClick={onClose}
-                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-8 py-4 text-sm font-semibold text-white transition hover:bg-orange-600"
+                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600 sm:mt-8 sm:px-8 sm:py-4"
               >
                 Belanja Sekarang
                 <ArrowRight size={18} />
@@ -217,20 +217,20 @@ export default function CartDrawer({
           ) : (
             <>
               {/* ITEMS */}
-              <div className="flex-1 space-y-3 overflow-y-auto px-6 py-6">
+              <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
                 {cartItems.map(
                   (
                     item
                   ) => (
                     <div
                       key={`${item.id}-${item.variantName || "default"}`}
-                      className="rounded-lg border border-gray-100 bg-white p-4 transition"
+                      className="rounded-lg border border-gray-100 bg-white p-3 transition sm:p-4"
                     >
 
-                      <div className="flex gap-4">
+                      <div className="flex gap-3 sm:gap-4">
 
                         {/* IMAGE */}
-                        <div className="h-28 w-28 overflow-hidden rounded-lg bg-gray-100">
+                        <div className="h-22 w-22 shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:h-28 sm:w-28">
 
                           <Image
                             src={getImageUrl(
@@ -247,14 +247,14 @@ export default function CartDrawer({
 
                         {/* CONTENT */}
                         <div className="flex min-w-0 flex-1 flex-col">
-                          <div className="flex min-w-0 items-start justify-between gap-4">
+                          <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-4">
                             <div className="min-w-0 flex-1">
-                              <h3 className="truncate text-base font-semibold text-[#19398A]">
+                              <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-[#19398A] sm:truncate sm:text-base sm:leading-normal">
                                 {item.name}
                               </h3>
 
                               {item.variantName ? (
-                                <div className="mt-2 flex items-center gap-2">
+                                <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
                                   <span className="text-xs text-gray-400">
                                     Variant:
                                   </span>
@@ -274,18 +274,18 @@ export default function CartDrawer({
                                   item.variantName
                                 )
                               }
-                              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-500"
+                              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-500 sm:h-9 sm:w-9"
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={17} />
                             </button>
 
                           </div>
 
                           {/* BOTTOM */}
-                          <div className="mt-auto flex items-end justify-between pt-3">
+                          <div className="mt-auto flex flex-col gap-3 pt-3 sm:flex-row sm:items-end sm:justify-between">
 
                             {/* QTY */}
-                            <div className="flex items-center overflow-hidden rounded-md border border-gray-200">
+                            <div className="flex w-fit items-center overflow-hidden rounded-md border border-gray-200">
 
                               <button
                                 onClick={() =>
@@ -322,13 +322,13 @@ export default function CartDrawer({
                             </div>
 
                             {/* TOTAL */}
-                            <div className="text-right">
+                            <div className="text-left sm:text-right">
 
                               <p className="text-xs text-gray-400">
                                 Subtotal
                               </p>
 
-                              <p className="text-lg font-bold text-orange-500">
+                              <p className="text-base font-bold text-orange-500 sm:text-lg">
                                 Rp{" "}
                                 {(
                                   item.price *
@@ -350,18 +350,18 @@ export default function CartDrawer({
               </div>
 
               {/* FOOTER */}
-              <div className="border-t border-gray-100 bg-white p-6">
+              <div className="border-t border-gray-100 bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6">
 
                 {/* TOTAL */}
-                <div className="mb-5 rounded-lg bg-orange-50 p-5">
+                <div className="mb-4 rounded-lg bg-orange-50 p-4 sm:mb-5 sm:p-5">
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-4">
 
                     <span className="text-sm font-medium text-gray-500">
                       Total Pembayaran
                     </span>
 
-                    <span className="text-2xl font-bold text-orange-500">
+                    <span className="text-xl font-bold text-orange-500 sm:text-2xl">
                       Rp{" "}
                       {totalPrice.toLocaleString(
                         "id-ID"
@@ -372,11 +372,11 @@ export default function CartDrawer({
                 </div>
 
                 {/* BUTTON */}
-                <div className="space-x-2 flex justify-between">
+                <div className="grid gap-3 sm:flex sm:justify-between sm:space-x-2">
                   <Link
                     href="/cart"
                     onClick={onClose}
-                    className="flex h-14 w-full items-center justify-center rounded-xl border border-orange-500 text-base font-semibold text-orange-500 transition hover:bg-orange-50"
+                    className="flex h-12 w-full items-center justify-center rounded-xl border border-orange-500 text-sm font-semibold text-orange-500 transition hover:bg-orange-50 sm:h-14 sm:text-base"
                   >
                     Lihat Keranjang
                   </Link>
@@ -384,7 +384,7 @@ export default function CartDrawer({
                   <Link
                     href="/checkout"
                     onClick={onClose}
-                    className="flex h-14 items-center w-full justify-center rounded-xl bg-orange-500 text-base font-semibold text-white transition hover:bg-orange-600"
+                    className="flex h-12 w-full items-center justify-center rounded-xl bg-orange-500 text-sm font-semibold text-white transition hover:bg-orange-600 sm:h-14 sm:text-base"
                   >
                     Checkout Sekarang
                   </Link>

@@ -90,13 +90,13 @@ export default function LoginPage() {
     }
 
     return (
-        <main>
-            <div className="grid h-screen grid-cols-2">
+        <main className="bg-white">
+            <div className="grid min-h-screen lg:h-screen lg:grid-cols-2">
                 {/* LEFT */}
-                <div className="flex items-center justify-center px-32">
-                    <div className="w-full max-w-md">
-                        <div className="mb-8">
-                            <div className="mb-4">
+                <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:min-h-0 lg:px-32 lg:py-0">
+                    <div className="w-full max-w-md rounded-2xl border border-gray-200 p-5 lg:rounded-none lg:border-0 lg:p-0">
+                        <div className="mb-7 lg:mb-8">
+                            <div className="mb-5 lg:mb-4">
                                 <Link
                                     href="/"
                                     className="inline-flex items-center gap-2 text-sm text-[#19398A] transition hover:text-orange-500"
@@ -105,7 +105,7 @@ export default function LoginPage() {
                                 </Link>
                             </div>
 
-                            <p className="text-3xl font-semibold">
+                            <p className="text-2xl font-semibold leading-tight text-[#19398A] lg:text-3xl lg:text-black">
                                 Selamat Datang
                                 Kembali!
                             </p>
@@ -121,7 +121,7 @@ export default function LoginPage() {
                         </div>
 
                         {error ? (
-                            <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-500">
+                            <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-500 lg:rounded-2xl">
                                 {error}
                             </div>
                         ) : null}
@@ -163,7 +163,7 @@ export default function LoginPage() {
                                             )
                                         }
                                         placeholder="08xxxxxxxxxx"
-                                        className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        className="h-12 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none transition focus:border-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     />
                                 </div>
 
@@ -202,7 +202,7 @@ export default function LoginPage() {
                                                 )
                                             }
                                             placeholder="••••••••"
-                                            className="w-full rounded-xl border border-gray-300 px-4 py-3 pr-12 outline-none transition focus:border-orange-500"
+                                            className="h-12 w-full rounded-xl border border-gray-300 px-4 pr-12 text-sm outline-none transition focus:border-orange-500"
                                         />
 
                                         <button
@@ -233,7 +233,7 @@ export default function LoginPage() {
                             </div>
 
                             {/* REMEMBER + FORGOT */}
-                            <div className="flex items-center justify-between mt-5 mb-8">
+                            <div className="mb-7 mt-5 flex flex-wrap items-center justify-between gap-3 lg:mb-8">
                                 <label className="flex cursor-pointer items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -271,7 +271,7 @@ export default function LoginPage() {
                                 disabled={
                                     loading
                                 }
-                                className="w-full rounded-xl bg-orange-500 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+                                className="h-12 w-full cursor-pointer rounded-xl bg-orange-500 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
                             >
                                 {loading
                                     ? "Loading..."
@@ -286,11 +286,11 @@ export default function LoginPage() {
                 </div>
 
                 {/* RIGHT */}
-                <div>
+                <div className="hidden lg:block">
                     <Image
                         alt="img loginpage"
                         src={img5}
-                        className="h-screen object-cover"
+                        className="h-screen w-full object-cover"
                     />
                 </div>
             </div>

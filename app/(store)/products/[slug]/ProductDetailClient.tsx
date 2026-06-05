@@ -10,8 +10,6 @@ import {
     Share2,
     ChevronLeft,
     ChevronRight as ChevronRightIcon,
-    Star,
-    ShieldCheck,
 } from "lucide-react";
 
 import AddToCartButton from "@/components/AddToCartButton";
@@ -221,10 +219,10 @@ export default function ProductDetailClient({
     }
 
     return (
-        <main className="py-10">
-            <div className="mx-auto max-w-7xl">
+        <main className="overflow-x-hidden py-6 lg:py-10">
+            <div className="mx-auto w-full max-w-7xl min-w-0 px-4 lg:px-0">
                 {/* BREADCRUMB */}
-                <div className="mb-8 flex flex-wrap items-center gap-2 text-sm">
+                <div className="mb-5 flex flex-wrap items-center gap-1.5 text-xs lg:mb-8 lg:gap-2 lg:text-sm">
 
                     <Link
                         href="/"
@@ -250,15 +248,15 @@ export default function ProductDetailClient({
                         className="text-gray-300"
                     />
 
-                    <span className="font-medium text-[#1B1B1B]">
+                    <span className="min-w-0 break-words font-medium text-[#1B1B1B]">
                         {product.name}
                     </span>
                 </div>
 
-                <div className="grid gap-14 lg:grid-cols-[0.95fr_0.85fr]">
+                <div className="grid min-w-0 gap-7 lg:grid-cols-[0.95fr_0.85fr] lg:gap-14">
                     {/* LEFT */}
-                    <div>
-                        <div className="flex gap-5">
+                    <div className="min-w-0">
+                        <div className="flex min-w-0 gap-5">
 
                             {/* THUMBNAIL */}
                             <div className="hidden flex-col gap-4 lg:flex">
@@ -297,13 +295,13 @@ export default function ProductDetailClient({
                             </div>
 
                             {/* MAIN IMAGE */}
-                            <div className="relative flex-1 overflow-hidden rounded-lg bg-[#F4F4F4]">
+                            <div className="relative aspect-square min-w-0 flex-1 overflow-hidden rounded-lg bg-[#F4F4F4] lg:aspect-auto">
                                 <Image
                                     src={getImageUrl(activeImage)}
                                     alt={product.name}
                                     width={1000}
                                     height={1200}
-                                    className="h-full w-full object-cover"
+                                    className="h-full w-full object-contain lg:object-cover"
                                     unoptimized
                                 />
 
@@ -311,9 +309,9 @@ export default function ProductDetailClient({
                                 <button
                                     type="button"
                                     onClick={handleShare}
-                                    className="absolute right-5 top-5 flex h-14 w-14 items-center justify-center rounded-lg bg-white/90 text-[#19398A] cursor-pointer transition hover:scale-105 hover:text-orange-500"
+                                    className="absolute right-3 top-3 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-white/90 text-[#19398A] transition hover:scale-105 hover:text-orange-500 lg:right-5 lg:top-5 lg:h-14 lg:w-14"
                                 >
-                                    <Share2 size={24} />
+                                    <Share2 className="h-5 w-5 lg:h-6 lg:w-6" />
                                 </button>
 
                                 {/* PREV */}
@@ -321,9 +319,9 @@ export default function ProductDetailClient({
                                     <button
                                         type="button"
                                         onClick={prevImage}
-                                        className="absolute bottom-5 right-20 flex h-12 w-12 items-center justify-center rounded-lg bg-white/90 text-[#19398A]"
+                                        className="absolute bottom-3 right-15 flex h-10 w-10 items-center justify-center rounded-lg bg-white/90 text-[#19398A] lg:bottom-5 lg:right-20 lg:h-12 lg:w-12"
                                     >
-                                        <ChevronLeft size={26} />
+                                        <ChevronLeft className="h-5 w-5 lg:h-6 lg:w-6" />
                                     </button>
                                 )}
 
@@ -332,67 +330,69 @@ export default function ProductDetailClient({
                                     <button
                                         type="button"
                                         onClick={nextImage}
-                                        className="absolute bottom-5 right-5 flex h-12 w-12 items-center justify-center rounded-lg bg-white/90 text-[#19398A]"
+                                        className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white/90 text-[#19398A] lg:bottom-5 lg:right-5 lg:h-12 lg:w-12"
                                     >
-                                        <ChevronRightIcon size={26} />
+                                        <ChevronRightIcon className="h-5 w-5 lg:h-6 lg:w-6" />
                                     </button>
                                 )}
                             </div>
                         </div>
+
+                        {/* MOBILE THUMBNAILS */}
+                        {images.length > 1 ? (
+                            <div className="mt-3 flex max-w-full gap-3 overflow-x-auto pb-1 lg:hidden">
+                                {images.map(
+                                    (
+                                        img,
+                                        index
+                                    ) => {
+                                        const active =
+                                            activeIndex ===
+                                            index;
+
+                                        return (
+                                            <button
+                                                key={img.id}
+                                                type="button"
+                                                onClick={() =>
+                                                    setActiveIndex(index)
+                                                }
+                                                className={`h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 bg-[#F4F4F4] transition-all duration-300 ${active
+                                                    ? "border-orange-500"
+                                                    : "border-gray-200"
+                                                    }`}
+                                            >
+                                                <Image
+                                                    src={getImageUrl(img.image)}
+                                                    alt=""
+                                                    width={96}
+                                                    height={96}
+                                                    className="h-full w-full object-contain"
+                                                    unoptimized
+                                                />
+                                            </button>
+                                        );
+                                    }
+                                )}
+                            </div>
+                        ) : null}
                     </div>
 
                     {/* RIGHT */}
-                    <div className="flex flex-col">
+                    <div className="flex min-w-0 flex-col">
                         {/* TITLE */}
-                        <h1 className="text-2xl font-semibold text-[#19398A]">
+                        <h1 className="text-xl font-semibold leading-7 text-[#19398A] lg:text-2xl lg:leading-normal">
                             {product.name}
                         </h1>
 
-                        <div className="flex gap-5 items-center mt-4">
-                            <div className="flex gap-3">
-                                <div className="flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-medium text-[#19398A]">
-                                    <ShieldCheck size={14} />
-                                    Original Product
-                                </div>
-                            </div>
-
-                            <div className="h-full w-0.5 bg-gray-200 rounded-full">
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-1 text-orange-400">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <Star
-                                            key={i}
-                                            size={20}
-                                            fill="currentColor"
-                                        />
-                                    ))}
-
-                                    <Star
-                                        size={20}
-                                        className="text-gray-300"
-                                    />
-                                </div>
-
-                                <span className="font-semibold text-[#19398A]">
-                                    4.8
-                                </span>
-
-                                <span className="text-gray-400 text-sm">
-                                    (124 Reviews)
-                                </span>
-                            </div>
-                        </div>
-
                         {/* PRICE */}
-                        <div className="mt-3">
+                        <div className="mt-2">
                             {/* PRICE */}
                             {activeVariant ? (
 
                                 <>
                                     {activeVariant.discount_price ? (
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex flex-wrap items-center gap-2 lg:gap-4">
                                             <p className="text-2xl font-semibold text-orange-500">
                                                 Rp{" "}
                                                 {Number(
@@ -400,7 +400,7 @@ export default function ProductDetailClient({
                                                 ).toLocaleString("id-ID")}
                                             </p>
 
-                                            <span className="text-xl text-gray-400 line-through">
+                                            <span className="text-sm text-gray-400 line-through lg:text-xl">
                                                 Rp{" "}
                                                 {Number(
                                                     activeVariant.price
@@ -411,7 +411,7 @@ export default function ProductDetailClient({
 
                                     ) : (
 
-                                        <p className="text-3xl font-semibold text-orange-500">
+                                        <p className="text-2xl font-semibold text-orange-500 lg:text-3xl">
                                             Rp{" "}
                                             {Number(
                                                 activeVariant.price
@@ -424,7 +424,7 @@ export default function ProductDetailClient({
                             ) : (
                                 <>
                                     {product.discount_price ? (
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex flex-wrap items-center gap-2 lg:gap-4">
 
                                             <p className="text-2xl font-semibold text-orange-500">
                                                 Rp{" "}
@@ -433,7 +433,7 @@ export default function ProductDetailClient({
                                                 ).toLocaleString("id-ID")}
                                             </p>
 
-                                            <span className="text-xl text-gray-400 line-through">
+                                            <span className="text-sm text-gray-400 line-through lg:text-xl">
                                                 Rp{" "}
                                                 {Number(
                                                     product.price
@@ -442,7 +442,7 @@ export default function ProductDetailClient({
 
                                         </div>
                                     ) : (
-                                        <p className="text-3xl font-semibold text-orange-500">
+                                        <p className="text-2xl font-semibold text-orange-500 lg:text-3xl">
                                             Rp{" "}
                                             {Number(
                                                 product.price
@@ -453,7 +453,7 @@ export default function ProductDetailClient({
                             )}
 
                             {/* STOCK + FAVORITE */}
-                            <div className="mt-4 flex items-center justify-between">
+                            <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <p className="text-sm text-gray-500">
                                     Stock tersedia:
                                     <span className="ml-1 font-semibold text-[#19398A]">
@@ -468,22 +468,23 @@ export default function ProductDetailClient({
                                     onClick={() =>
                                         setFavorite(!favorite)
                                     }
-                                    className={`flex items-center justify-center rounded-xl transition hover:scale-105 ${favorite
+                                    className={`flex max-w-full items-center justify-start rounded-xl transition hover:scale-105 ${favorite
                                         ? "  text-red-500"
                                         : " text-[#19398A]"
                                         }`}
                                 >
-                                    <span className="flex items-center gap-2 text-sm"><Heart
+                                    <span className="flex min-w-0 items-center gap-2 text-sm"><Heart
                                         size={20}
+                                        className="shrink-0"
                                         fill={
                                             favorite
                                                 ? "currentColor"
                                                 : "none"
                                         }
-                                    />Tambah ke favorit</span>
+                                    /><span className="truncate">Tambah ke favorit</span></span>
                                 </button>
                             </div>
-                            <div className="my-6 border border-dashed border-gray-200/80" />
+                            <div className="my-5 border border-dashed border-gray-200/80 lg:my-6" />
                         </div>
 
                         {/* OPTIONS */}
@@ -500,7 +501,7 @@ export default function ProductDetailClient({
                                                     </span>
                                                 ) : null}
                                             </h3>
-                                            <div className="flex flex-wrap gap-3">
+                                            <div className="flex flex-wrap gap-2.5 lg:gap-3">
                                                 {option.values.map((value) => {
                                                     const active =
                                                         selectedOptions[
@@ -520,7 +521,7 @@ export default function ProductDetailClient({
                                                                     })
                                                                 );
                                                             }}
-                                                            className={`rounded-md border px-4 py-2 text-sm font-medium transition ${active
+                                                            className={`rounded-md border px-3 py-2 text-sm font-medium transition lg:px-4 ${active
                                                                 ? "border-orange-500 bg-orange-50 text-orange-500"
                                                                 : "border-gray-300 hover:border-orange-500 hover:text-orange-500"
                                                                 }`}
@@ -585,9 +586,9 @@ export default function ProductDetailClient({
                             </div>
 
                             {/* BUTTON */}
-                            <div className="flex flex-wrap items-center gap-4 mt-8">
+                            <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap sm:items-center lg:mt-8 lg:gap-4">
                                 {/* ADD TO CART */}
-                                <div className="w-fit">
+                                <div className="w-full sm:w-fit">
                                     {isLoggedIn ? (
                                         <AddToCartButton
                                             product={{
@@ -614,7 +615,7 @@ export default function ProductDetailClient({
                                             onClick={() =>
                                                 setShowAuthModal(true)
                                             }
-                                            className="rounded-lg w-80 bg-orange-500 cursor-pointer px-6 py-3 text-sm font-medium text-white transition hover:bg-orange-600"
+                                            className="w-full rounded-lg bg-orange-500 px-6 py-3 text-sm font-medium text-white transition hover:bg-orange-600 sm:w-80"
                                         >
                                             Tambah ke Keranjang
                                         </button>
@@ -636,7 +637,7 @@ export default function ProductDetailClient({
                                         window.location.href =
                                             "/checkout";
                                     }}
-                                    className="rounded-lg border cursor-pointer border-orange-500 px-6 py-3 text-sm font-medium text-orange-500  transition hover:bg-orange-50"
+                                    className="w-full cursor-pointer rounded-lg border border-orange-500 px-6 py-3 text-sm font-medium text-orange-500 transition hover:bg-orange-50 sm:w-auto"
                                 >
                                     Checkout Sekarang
                                 </button>
@@ -646,12 +647,12 @@ export default function ProductDetailClient({
                 </div>
 
                 {/* DESCRIPTION */}
-                <div className="mt-12 border-t border-dashed border-gray-200 pt-8">
-                    <h2 className="mb-3 text-xl font-bold text-[#19398A]">
+                <div className="mt-10 border-t border-dashed border-gray-200 pt-6 lg:mt-12 lg:pt-8">
+                    <h2 className="mb-3 text-lg font-bold text-[#19398A] lg:text-xl">
                         Deskripsi Produk
                     </h2>
 
-                    <p className="text-gray-600">
+                    <p className="text-sm leading-7 text-gray-600 lg:text-base lg:leading-normal">
                         {product.description ||
                             "Tidak ada deskripsi produk."}
                     </p>
@@ -659,31 +660,31 @@ export default function ProductDetailClient({
 
                 {/* RELATED PRODUCTS */}
                 {relatedProducts.length > 0 && (
-                    <div className="mt-12 border-t border-dashed border-gray-200 pt-10">
+                    <div className="mt-10 border-t border-dashed border-gray-200 pt-8 lg:mt-12 lg:pt-10">
 
                         {/* HEADER */}
-                        <div className="mb-8 flex items-center justify-between">
+                        <div className="mb-6 flex items-end justify-between gap-4 lg:mb-8">
 
                             <div>
-                                <p className="text-sm font-bold uppercase tracking-wide text-orange-500">
+                                <p className="text-xs font-bold uppercase tracking-wide text-orange-500 lg:text-sm">
                                     Related Products
                                 </p>
 
-                                <h2 className="mt-2 text-3xl font-bold text-[#19398A]">
+                                <h2 className="mt-2 text-2xl font-bold text-[#19398A] lg:text-3xl">
                                     You May Also Like
                                 </h2>
                             </div>
 
                             <Link
                                 href="/products"
-                                className="text-sm font-semibold text-[#19398A] underline underline-offset-4 hover:text-orange-500"
+                                className="hidden shrink-0 text-sm font-semibold text-[#19398A] underline underline-offset-4 hover:text-orange-500 lg:inline-flex"
                             >
                                 Lihat Semua
                             </Link>
                         </div>
 
                         {/* PRODUCTS */}
-                        <div className="grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-7 lg:grid-cols-5 lg:gap-x-4 lg:gap-y-8">
                             {relatedProducts.map((item) => {
                                 const hasDiscount =
                                     item.discount_price &&
@@ -699,10 +700,10 @@ export default function ProductDetailClient({
                                             href={`/products/${item.slug}`}
                                         >
                                             {/* IMAGE */}
-                                            <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100">
+                                            <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100 lg:rounded-2xl">
                                                 {/* BADGE */}
                                                 {hasDiscount ? (
-                                                    <div className="absolute left-3 top-3 z-20 rounded-full bg-orange-500 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white">
+                                                    <div className="absolute left-2 top-2 z-20 rounded-full bg-orange-500 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white lg:left-3 lg:top-3 lg:px-3 lg:text-[11px]">
                                                         Sale
                                                     </div>
                                                 ) : null}
@@ -717,23 +718,23 @@ export default function ProductDetailClient({
                                         </Link>
 
                                         {/* CONTENT */}
-                                        <div className="pt-4">
+                                        <div className="pt-3 lg:pt-4">
                                             {/* TITLE */}
-                                            <h3 className="line-clamp-2 font-medium text-[#19398A] truncate">
+                                            <h3 className="line-clamp-2 text-sm font-medium leading-5 text-[#19398A] lg:truncate lg:text-base lg:leading-normal">
                                                 {item.name}
                                             </h3>
                                             {/* PRICE */}
-                                            <div className="mt-3">
+                                            <div className="mt-1.5 lg:mt-3">
                                                 {hasDiscount ? (
                                                     <>
-                                                        <p className="text-sm font-medium text-gray-400 line-through">
+                                                        <p className="text-xs font-medium text-gray-400 line-through lg:text-sm">
                                                             Rp{" "}
                                                             {Number(
                                                                 item.price
                                                             ).toLocaleString("id-ID")}
                                                         </p>
 
-                                                        <p className="text-lg font-bold text-orange-500">
+                                                        <p className="text-base font-bold text-orange-500 lg:text-lg">
                                                             Rp{" "}
                                                             {Number(
                                                                 item.discount_price
@@ -741,7 +742,7 @@ export default function ProductDetailClient({
                                                         </p>
                                                     </>
                                                 ) : (
-                                                    <p className="text-lg font-bold text-orange-500">
+                                                    <p className="text-base font-bold text-orange-500 lg:text-lg">
                                                         Rp{" "}
                                                         {Number(
                                                             item.price
@@ -754,6 +755,15 @@ export default function ProductDetailClient({
                                     </div>
                                 );
                             })}
+                        </div>
+
+                        <div className="mt-8 flex justify-center lg:hidden">
+                            <Link
+                                href="/products"
+                                className="text-base font-semibold text-[#19398A] underline underline-offset-4 hover:text-orange-500"
+                            >
+                                Lihat Semua
+                            </Link>
                         </div>
                     </div>
                 )}

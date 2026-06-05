@@ -8,7 +8,6 @@ import {
   Trash2,
   ArrowRight,
   ShoppingBag,
-  BadgePercent,
   ChevronRight,
   Plus,
   Minus,
@@ -91,10 +90,10 @@ export default function CartPage() {
   }, [cartItems]);
 
   return (
-    <main className="pb-16 pt-10">
+    <main className="bg-[#F8FAFC] px-4 pb-12 pt-6 lg:px-0 lg:pb-16 lg:pt-10">
       <div className="mx-auto max-w-7xl">
         {/* HEADER */}
-        <div className="mb-8 flex flex-wrap items-center gap-2 text-sm">
+        <div className="mb-5 flex flex-wrap items-center gap-2 text-xs lg:mb-8 lg:text-sm">
           <Link
             href="/"
             className="font-normal text-gray-400 transition hover:text-[#19398A]"
@@ -118,25 +117,24 @@ export default function CartPage() {
           EMPTY CART
           =========================================
           */
-          <div className="flex flex-col items-center rounded-xl border border-dashed border-gray-200 bg-white px-6 py-24 text-center ">
-            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-orange-50">
+          <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-200 bg-white px-5 py-16 text-center shadow-sm shadow-gray-100 lg:rounded-3xl lg:px-6 lg:py-24">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 lg:h-32 lg:w-32">
               <ShoppingBag
-                size={56}
-                className="text-orange-500"
+                className="h-12 w-12 text-orange-500 lg:h-14 lg:w-14"
               />
             </div>
 
-            <h2 className="mt-8 text-4xl font-bold text-[#19398A]">
+            <h2 className="mt-6 text-2xl font-bold text-[#19398A] lg:mt-8 lg:text-4xl">
               Keranjang masih kosong
             </h2>
 
-            <p className="mt-5 max-w-xl text-base leading-8 text-gray-500">
+            <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500 lg:mt-5 lg:text-base lg:leading-8">
               Yuk temukan berbagai kebutuhan terbaik untuk hewan peliharaanmu sekarang juga.
             </p>
 
             <Link
               href="/products"
-              className="mt-6 inline-flex h-12 items-center justify-center rounded-lg bg-orange-500 px-8 text-sm font-semibold text-white transition hover:bg-orange-600"
+              className="mt-6 inline-flex h-12 items-center justify-center rounded-xl bg-orange-500 px-8 text-sm font-semibold text-white transition hover:bg-orange-600"
             >
               Mulai Belanja
             </Link>
@@ -147,19 +145,19 @@ export default function CartPage() {
           CONTENT
           =========================================
           */
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
             {/* LEFT */}
-            <div className="space-y-4 col-span-2">
+            <div className="space-y-4">
               {cartItems.map((item) => (
                 <div
                   key={`${item.id}-${item.variantName || "default"}`}
-                  className="group overflow-hidden rounded-lg border border-gray-200 bg-white p-5"
+                  className="group overflow-hidden rounded-xl border border-gray-200 bg-white p-4 lg:p-5"
                 >
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-3 lg:gap-4">
 
                     {/* IMAGE */}
-                    <div className="relative h-34 w-34 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:h-32 sm:w-32 lg:h-[136px] lg:w-[136px]">
                       <Image
                         src={getImageUrl(item.image)}
                         alt={item.name}
@@ -180,7 +178,7 @@ export default function CartPage() {
                         <div className="min-w-0 flex-1">
 
                           {/* TITLE */}
-                          <h3 className="truncate text-base font-semibold text-[#19398A]">
+                          <h3 className="line-clamp-2 text-base font-semibold leading-6 text-[#19398A] lg:truncate">
                             {item.name}
                           </h3>
 
@@ -192,7 +190,7 @@ export default function CartPage() {
                                 Variant:
                               </span>
 
-                              <div className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10px] font-semibold text-orange-500">
+                              <div className="max-w-full truncate rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10px] font-semibold text-orange-500">
                                 {item.variantName}
                               </div>
 
@@ -208,7 +206,7 @@ export default function CartPage() {
                               item.variantName
                             )
                           }
-                          className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-red-500 transition hover:bg-red-50"
+                          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-red-500 transition hover:bg-red-50 lg:h-10 lg:w-10"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -216,15 +214,15 @@ export default function CartPage() {
                       </div>
 
                       {/* BOTTOM */}
-                      <div className="mt-5 flex items-center justify-between gap-4">
+                      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:mt-5">
 
                         {/* SUBTOTAL */}
                         <div className="rounded-xl">
-                          <p className="text-sm text-gray-400">
+                          <p className="text-xs text-gray-400 lg:text-sm">
                             Subtotal
                           </p>
 
-                          <p className="text-xl font-semibold text-orange-500">
+                          <p className="text-lg font-semibold text-orange-500 lg:text-xl">
                             Rp{" "}
                             {(
                               item.price *
@@ -234,7 +232,7 @@ export default function CartPage() {
                         </div>
 
                         {/* QUANTITY */}
-                        <div>
+                        <div className="w-fit">
                           <div className="flex items-center overflow-hidden rounded-lg border border-gray-200 ">
 
                             {/* MINUS */}
@@ -246,13 +244,13 @@ export default function CartPage() {
                                   item.variantName
                                 )
                               }
-                              className="flex h-10 w-10 cursor-pointer items-center justify-center text-[#19398A] transition hover:bg-gray-100"
+                              className="flex h-10 w-12 cursor-pointer items-center justify-center text-[#19398A] transition hover:bg-gray-100 sm:w-10"
                             >
                               <Minus size={16} />
                             </button>
 
                             {/* VALUE */}
-                            <div className="flex h-10 min-w-14 items-center justify-center border-x border-gray-200 bg-white text-sm font-bold text-[#19398A]">
+                            <div className="flex h-10 w-14 items-center justify-center border-x border-gray-200 bg-white text-sm font-bold text-[#19398A]">
                               {item.quantity}
                             </div>
 
@@ -265,7 +263,7 @@ export default function CartPage() {
                                   item.variantName
                                 )
                               }
-                              className="flex h-10 w-10 cursor-pointer items-center justify-center text-[#19398A] transition hover:bg-gray-100"
+                              className="flex h-10 w-12 cursor-pointer items-center justify-center text-[#19398A] transition hover:bg-gray-100 sm:w-10"
                             >
                               <Plus size={16} />
                             </button>
@@ -280,34 +278,15 @@ export default function CartPage() {
             </div>
 
             {/* RIGHT */}
-            <div className="h-fit rounded-lg border border-gray-200 bg-white p-7 lg:sticky lg:top-8">
+            <div className="h-fit rounded-xl border border-gray-200 bg-white p-5 lg:sticky lg:top-8  lg:p-7">
 
               {/* TITLE */}
               <h2 className="text-xl font-semibold text-[#19398A]">
                 Ringkasan Belanja
               </h2>
 
-              {/* BENEFIT */}
-              <div className="mt-4 flex items-center gap-3 rounded-xl bg-orange-50 p-4">
-
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500 text-white">
-                  <BadgePercent size={22} />
-                </div>
-
-                <div>
-                  <p className="font-semibold text-[#19398A]">
-                    Gratis biaya admin
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-500">
-                    Nikmati checkout lebih hemat hari ini.
-                  </p>
-                </div>
-
-              </div>
-
               {/* SUMMARY */}
-              <div className="mt-8 space-y-5">
+              <div className="mt-6 space-y-5 lg:mt-8">
 
                 <div className="flex items-center justify-between text-sm text-gray-500">
 
@@ -323,31 +302,18 @@ export default function CartPage() {
 
                 </div>
 
-                <div className="flex items-center justify-between text-sm text-gray-500">
-
-                  <span>Biaya Admin</span>
-
-                  <span className="font-semibold text-[#19398A]">
-                    Gratis
-                  </span>
-
-                </div>
-
                 <div className="border-t border-dashed border-gray-200 pt-5">
 
-                  <div className="flex items-end justify-between gap-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between lg:flex-col lg:items-start">
 
                     <div>
                       <p className="text-sm text-gray-500">
                         Total Pembayaran
                       </p>
 
-                      <h3 className="mt-1 text-2xl font-bold text-[#19398A]">
-                        Total
-                      </h3>
                     </div>
 
-                    <span className="text-2xl font-bold text-orange-500">
+                    <span className="text-3xl font-bold text-orange-500">
                       Rp{" "}
                       {totalPrice.toLocaleString(
                         "id-ID"
@@ -362,7 +328,7 @@ export default function CartPage() {
               {/* BUTTON */}
               <Link
                 href="/checkout"
-                className="mt-8 flex h-15 w-full items-center justify-center gap-3 rounded-xl bg-orange-500 text-sm font-semibold text-white transition hover:bg-orange-600"
+                className="mt-7 flex h-[56px] w-full items-center justify-center gap-3 rounded-xl bg-orange-500 text-sm font-semibold text-white transition hover:bg-orange-600 lg:mt-8"
               >
                 Lanjut Checkout
 
@@ -372,13 +338,13 @@ export default function CartPage() {
               {/* SHOPPING */}
               <Link
                 href="/products"
-                className="mt-4 flex h-15 w-full items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-[#19398A] transition hover:bg-gray-50"
+                className="mt-3 flex h-[52px] w-full items-center justify-center rounded-xl border border-gray-200 text-sm font-semibold text-[#19398A] transition hover:bg-gray-50 lg:mt-4 lg:h-[56px]"
               >
                 Lanjut Belanja
               </Link>
 
               {/* NOTE */}
-              <div className="mt-6 rounded-xl border border-orange-100 bg-orange-50 p-4">
+              <div className="mt-5 rounded-xl border border-orange-100 bg-orange-50 p-4 lg:mt-6">
                 <p className="text-sm text-orange-600">
                   Pastikan produk dan jumlah pesanan sudah sesuai sebelum melanjutkan checkout.
                 </p>
