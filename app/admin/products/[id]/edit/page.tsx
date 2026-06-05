@@ -180,7 +180,7 @@ export default function EditProductPage() {
     path: string
   ) {
 
-    if (!path) {
+    if (!path || path.trim() === "" || path.trim() === "0") {
       return "/pet-placeholder.jpg";
     }
 

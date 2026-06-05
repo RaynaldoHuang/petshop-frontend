@@ -32,7 +32,7 @@ type Product = {
 };
 
 function getImageUrl(image: string | null) {
-    if (!image || image.trim() === "") return "/pet-placeholder.jpg";
+    if (!image || image.trim() === "" || image.trim() === "0") return "/pet-placeholder.jpg";
 
     if (image.startsWith("http")) return image;
 

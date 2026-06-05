@@ -45,7 +45,7 @@ type Product = {
 };
 
 function getImageUrl(image: string | null) {
-  if (!image || image.trim() === "") {
+  if (!image || image.trim() === "" || image.trim() === "0") {
     return "/pet-placeholder.jpg";
   }
 

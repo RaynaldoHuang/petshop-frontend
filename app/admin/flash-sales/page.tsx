@@ -26,7 +26,7 @@ type FlashSale = {
 };
 
 function imageUrl(image: string | null) {
-    if (!image) return "/pet-placeholder.jpg";
+    if (!image || image.trim() === "" || image.trim() === "0") return "/pet-placeholder.jpg";
     if (image.startsWith("http")) return image;
     return `${STORAGE_URL}${image}`;
 }

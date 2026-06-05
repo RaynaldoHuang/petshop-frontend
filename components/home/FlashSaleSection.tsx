@@ -32,7 +32,7 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 const STORAGE_URL = "http://localhost:8000/storage/";
 
 function getImageUrl(image: string | null) {
-    if (!image || image.trim() === "") return "/pet-placeholder.jpg";
+    if (!image || image.trim() === "" || image.trim() === "0") return "/pet-placeholder.jpg";
     if (image.startsWith("http")) return image;
     return `${STORAGE_URL}${image}`;
 }

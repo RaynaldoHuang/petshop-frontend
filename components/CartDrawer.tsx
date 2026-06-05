@@ -38,7 +38,8 @@ function getImageUrl(
 
   if (
     !image ||
-    image.trim() === ""
+    image.trim() === "" ||
+    image.trim() === "0"
   ) {
     return "/pet-placeholder.jpg";
   }
