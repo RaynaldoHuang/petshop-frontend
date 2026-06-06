@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, Clock3 } from "lucide-react";
+import { getStorageUrl } from "@/lib/storage";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const STORAGE_URL = "http://localhost:8000/storage/";
 
 type Article = {
     id: number;
@@ -32,7 +32,7 @@ function getImageUrl(image: string | null) {
 
     if (image.startsWith("http")) return image;
 
-    return `${STORAGE_URL}${image}`;
+    return getStorageUrl(image);
 }
 
 function decodeArticleContent(content: string) {

@@ -3,9 +3,9 @@
 
 import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
+import { getStorageUrl } from "@/lib/storage";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const STORAGE_URL = "http://localhost:8000/storage/";
 
 type Hero = {
     id: number;
@@ -197,7 +197,7 @@ export default function AdminHeroSectionsPage() {
             return path;
         }
 
-        return `${STORAGE_URL}${path}`;
+        return getStorageUrl(path);
     }
 
     return (

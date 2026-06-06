@@ -14,6 +14,7 @@ import {
   Suspense,
 } from "react";
 
+import { getStorageUrl } from "@/lib/storage";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -53,7 +54,7 @@ function getImageUrl(image: string | null) {
     return image;
   }
 
-  return `http://localhost:8000/storage/${image}`;
+  return getStorageUrl(image);
 }
 
 function ProductsPageContent() {

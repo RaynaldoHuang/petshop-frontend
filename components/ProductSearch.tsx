@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { getStorageUrl } from "@/lib/storage";
 
 type Product = {
   id: number;
@@ -33,7 +34,7 @@ function getImageUrl(image: string | null) {
     return image;
   }
 
-  return `http://localhost:8000/storage/${image}`;
+  return getStorageUrl(image);
 }
 
 export default function ProductSearch({

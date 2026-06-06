@@ -18,12 +18,10 @@ import {
   Save,
   X,
 } from "lucide-react";
+import { getStorageUrl } from "@/lib/storage";
 
 const API =
   process.env.NEXT_PUBLIC_API_URL;
-
-const STORAGE_URL =
-  "http://localhost:8000/storage/";
 
 type ProductImage = {
   id: number;
@@ -188,7 +186,7 @@ export default function EditProductPage() {
       return path;
     }
 
-    return `${STORAGE_URL}${path}`;
+    return getStorageUrl(path);
   }
 
   /*

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getStorageUrl } from "@/lib/storage";
 
 type Hero = {
     id: number;
@@ -18,10 +19,8 @@ type Props = {
     heroes: Hero[];
 };
 
-const STORAGE = "http://localhost:8000/storage/";
-
 function getImageUrl(image: string | null) {
-    if (!image || image.trim() === "") {
+    if (!image || image.trim() === "" || image.trim() === "0") {
         return "/pet-placeholder.jpg";
     }
 
@@ -29,7 +28,7 @@ function getImageUrl(image: string | null) {
         return image;
     }
 
-    return `${STORAGE}${image}`;
+    return getStorageUrl(image);
 }
 
 export default function HeroSlider({ heroes }: Props) {

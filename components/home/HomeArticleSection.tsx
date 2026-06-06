@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { getStorageUrl } from "@/lib/storage";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const STORAGE_URL = "http://localhost:8000/storage/";
 
 type Article = {
     id: number;
@@ -18,9 +18,9 @@ type Article = {
 };
 
 function getImageUrl(image: string | null) {
-    if (!image || image.trim() === "") return "/pet-placeholder.jpg";
+    if (!image || image.trim() === "" || image.trim() === "0") return "/pet-placeholder.jpg";
     if (image.startsWith("http")) return image;
-    return `${STORAGE_URL}${image}`;
+    return getStorageUrl(image);
 }
 
 function formatDate(date: string | null) {

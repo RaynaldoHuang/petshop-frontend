@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import {
   getCart,
 } from "@/lib/cart";
+import { getStorageUrl } from "@/lib/storage";
 
 import { CartItem } from "@/types/cart";
 
@@ -44,7 +45,7 @@ function getImageUrl(
     return image;
   }
 
-  return `http://localhost:8000/storage/${image}`;
+  return getStorageUrl(image);
 }
 
 export default function CheckoutPage() {

@@ -4,9 +4,9 @@
 import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import { Plus, Trash2, Zap } from "lucide-react";
+import { getStorageUrl } from "@/lib/storage";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const STORAGE_URL = "http://localhost:8000/storage/";
 
 type Product = {
     id: number;
@@ -28,7 +28,7 @@ type FlashSale = {
 function imageUrl(image: string | null) {
     if (!image || image.trim() === "" || image.trim() === "0") return "/pet-placeholder.jpg";
     if (image.startsWith("http")) return image;
-    return `${STORAGE_URL}${image}`;
+    return getStorageUrl(image);
 }
 
 export default function AdminFlashSalePage() {

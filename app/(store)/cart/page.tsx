@@ -26,6 +26,7 @@ import {
   removeFromCart,
   updateCartQuantity,
 } from "@/lib/cart";
+import { getStorageUrl } from "@/lib/storage";
 
 function getImageUrl(
   image: string | null
@@ -38,7 +39,7 @@ function getImageUrl(
     return image;
   }
 
-  return `http://localhost:8000/storage/${image}`;
+  return getStorageUrl(image);
 }
 
 export default function CartPage() {

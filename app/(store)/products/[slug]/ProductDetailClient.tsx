@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import AddToCartButton from "@/components/AddToCartButton";
+import { getStorageUrl } from "@/lib/storage";
 
 type ProductImage = {
     id: number;
@@ -71,7 +72,7 @@ function getImageUrl(image: string | null) {
         return image;
     }
 
-    return `http://localhost:8000/storage/${image}`;
+    return getStorageUrl(image);
 }
 
 export default function ProductDetailClient({

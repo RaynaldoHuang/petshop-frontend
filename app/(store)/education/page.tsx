@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { getStorageUrl } from "@/lib/storage";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const STORAGE_URL = "http://localhost:8000/storage/";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -20,7 +20,7 @@ type Article = {
 };
 
 function getImageUrl(image: string | null) {
-    if (!image || image.trim() === "") {
+    if (!image || image.trim() === "" || image.trim() === "0") {
         return "/pet-placeholder.jpg";
     }
 
@@ -28,7 +28,7 @@ function getImageUrl(image: string | null) {
         return image;
     }
 
-    return `${STORAGE_URL}${image}`;
+    return getStorageUrl(image);
 }
 
 function formatDate(date: string | null) {

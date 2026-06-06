@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { getStorageUrl } from "@/lib/storage";
 
 type Category = {
     id: number;
@@ -36,7 +37,7 @@ function getImageUrl(image: string | null) {
 
     if (image.startsWith("http")) return image;
 
-    return `http://localhost:8000/storage/${image}`;
+    return getStorageUrl(image);
 }
 
 export default function HomeProductSection() {

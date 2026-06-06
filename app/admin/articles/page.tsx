@@ -4,6 +4,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { FormEvent, useEffect, useState } from "react";
 import { FileText, ImagePlus, Pencil, Save, Trash2 } from "lucide-react";
+import { getStorageUrl } from "@/lib/storage";
 
 const ArticleRichTextEditor = dynamic(
     () => import("@/components/admin/ArticleRichTextEditor"),
@@ -16,7 +17,6 @@ const ArticleRichTextEditor = dynamic(
 }>;
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const STORAGE_URL = "http://localhost:8000/storage/";
 
 type Article = {
     id: number;
@@ -47,9 +47,9 @@ const emptyForm = {
 };
 
 function imageUrl(path: string | null) {
-    if (!path) return "/pet-placeholder.jpg";
+    if (!path || path.trim() === "" || path.trim() === "0") return "/pet-placeholder.jpg";
     if (path.startsWith("http")) return path;
-    return `${STORAGE_URL}${path}`;
+    return getStorageUrl(path);
 }
 
 export default function AdminArticlesPage() {
