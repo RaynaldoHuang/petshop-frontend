@@ -38,6 +38,9 @@ export const metadata: Metadata = {
     "aksesoris hewan",
     "pet supplies indonesia",
   ],
+  verification: {
+    google: "AXKD6n5RxzSIlj37n3rClk-1KlK5qy7uAAzxVjSrxLs",
+  },
   authors: [{ name: "Lucky Pet Market" }],
   creator: "Lucky Pet Market",
   publisher: "Lucky Pet Market",
