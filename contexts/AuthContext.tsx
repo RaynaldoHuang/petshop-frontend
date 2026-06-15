@@ -12,10 +12,13 @@ import { toast } from "sonner";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-type User = {
+export type User = {
     id: number;
     name: string;
     phone: string;
+    email?: string | null;
+    role: "super_admin" | "admin" | null;
+    is_active: boolean;
 };
 
 type AuthContextType = {

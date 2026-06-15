@@ -15,6 +15,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { apiFetch } from "@/lib/api";
 
 type OrderItem = {
   id: number;
@@ -170,36 +171,60 @@ export default function CustomerOrdersPage() {
   const [loading, setLoading] =
     useState(false);
 
+  const [error, setError] =
+    useState("");
+
   useEffect(() => {
     async function fetchOrders() {
       try {
         setLoading(true);
+        setError("");
 
-        const token =
-          localStorage.getItem("token");
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/customer/orders`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-            },
-          }
+        const res = await apiFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/customer/orders`
         );
 
         const data =
           await res.json();
 
+        if (!res.ok) {
+          throw new Error(
+            data.message ||
+            "Gagal memuat riwayat pesanan"
+          );
+        }
+
+        if (!Array.isArray(data)) {
+          throw new Error(
+            "Format data pesanan tidak valid"
+          );
+        }
+
         setOrders(data);
       } catch (error) {
-        console.log(error);
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Gagal memuat riwayat pesanan"
+        );
       } finally {
         setLoading(false);
       }
     }
 
     fetchOrders();
+
+    function refreshOrders() {
+      fetchOrders();
+    }
+
+    window.addEventListener("focus", refreshOrders);
+    window.addEventListener("order-updated", refreshOrders);
+
+    return () => {
+      window.removeEventListener("focus", refreshOrders);
+      window.removeEventListener("order-updated", refreshOrders);
+    };
   }, []);
 
   const filteredOrders =
@@ -284,7 +309,13 @@ export default function CustomerOrdersPage() {
             </div>
           </div>
 
-          {loading ? (
+          {error ? (
+
+            <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-600">
+              {error}
+            </div>
+
+          ) : loading ? (
 
             <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-500 shadow-sm shadow-gray-100 lg:rounded-xl">
               Memuat pesanan...

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 import { Eye, EyeOff } from "lucide-react";
 
@@ -15,6 +16,7 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { login } = useAuth();
 
     const [form, setForm] = useState({
         name: "",
@@ -85,14 +87,7 @@ export default function RegisterPage() {
                 );
             }
 
-            localStorage.setItem(
-                "token",
-                data.token
-            );
-
-            window.dispatchEvent(
-                new Event("auth-updated")
-            );
+            login(data.token, data.user);
 
             toast.success(
                 "Register berhasil"

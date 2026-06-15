@@ -22,6 +22,7 @@ import {
   getCart,
 } from "@/lib/cart";
 import { getStorageUrl } from "@/lib/storage";
+import { apiFetch } from "@/lib/api";
 
 import { CartItem } from "@/types/cart";
 
@@ -31,6 +32,7 @@ type PaymentMethod = {
   code: string;
   type: string;
   fee: number;
+  fee_percentage: number;
 };
 
 function getImageUrl(
@@ -86,7 +88,7 @@ export default function CheckoutPage() {
 
       try {
 
-        const res = await fetch(
+        const res = await apiFetch(
           `${process.env.NEXT_PUBLIC_API_URL}/payment-methods`
         );
 
@@ -121,11 +123,15 @@ export default function CheckoutPage() {
     );
   }, [cartItems]);
 
-  const adminFee =
-    selectedPayment?.fee || 0;
+  const fixedAdminFee = selectedPayment?.fee || 0;
+  const percentageAdminFee = Math.round(
+    subtotalPrice * ((selectedPayment?.fee_percentage || 0) / 100),
+  );
+  const adminFee = fixedAdminFee + percentageAdminFee;
+  const adminFeeTax = Math.round(adminFee * 0.11);
 
   const totalPrice =
-    subtotalPrice + adminFee;
+    subtotalPrice + adminFee + adminFeeTax;
 
   async function handleSubmit(
     e: FormEvent<HTMLFormElement>
@@ -147,7 +153,7 @@ export default function CheckoutPage() {
       setLoading(true);
       setError("");
 
-      const res = await fetch(
+      const res = await apiFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/orders`,
         {
           method: "POST",
@@ -203,7 +209,7 @@ export default function CheckoutPage() {
       CREATE PAYMENT
       =========================================
       */
-      const paymentRes = await fetch(
+      const paymentRes = await apiFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/payments/create`,
         {
           method: "POST",
@@ -459,7 +465,16 @@ export default function CheckoutPage() {
 
                             <p className="mt-1 text-xs text-gray-500 lg:text-sm">
                               Biaya admin Rp{" "}
-                              {method.fee.toLocaleString("id-ID")}
+                              {(
+                                method.fee +
+                                Math.round(
+                                  subtotalPrice *
+                                    ((method.fee_percentage || 0) / 100),
+                                )
+                              ).toLocaleString("id-ID")}
+                              {method.fee_percentage > 0
+                                ? ` (${method.fee_percentage}% + nominal)`
+                                : ""}
                             </p>
 
                           </div>
@@ -594,6 +609,17 @@ export default function CheckoutPage() {
                   <span>
                     Rp{" "}
                     {adminFee.toLocaleString("id-ID")}
+                  </span>
+
+                </div>
+
+                <div className="flex items-center justify-between text-sm text-gray-500">
+
+                  <span>PPN Biaya Admin (11%)</span>
+
+                  <span>
+                    Rp{" "}
+                    {adminFeeTax.toLocaleString("id-ID")}
                   </span>
 
                 </div>

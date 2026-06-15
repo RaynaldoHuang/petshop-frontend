@@ -17,6 +17,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { apiFetch } from "@/lib/api";
 
 export default function PaymentPage() {
   const [error, setError] =
@@ -39,18 +40,37 @@ export default function PaymentPage() {
         try {
           setCheckingStatus(true);
 
-          const res = await fetch(
+          const res = await apiFetch(
             `${process.env.NEXT_PUBLIC_API_URL}/payments/check-status/${paymentData.id}`
           );
 
           const data =
             await res.json();
 
+          if (!res.ok) {
+            throw new Error(
+              data.message ||
+              "Gagal memeriksa status pembayaran"
+            );
+          }
+
+          setPaymentData((current: any) => ({
+            ...current,
+            status: data.status,
+          }));
+
           if (data.status === "paid") {
             clearInterval(interval);
 
             window.location.href =
-              "/checkout/success";
+              `/checkout/success?order=${window.location.pathname.split("/").pop()}`;
+          }
+
+          if (
+            data.status === "expired" ||
+            data.status === "failed"
+          ) {
+            clearInterval(interval);
           }
         } catch (error) {
           console.log(error);
@@ -129,7 +149,7 @@ export default function PaymentPage() {
           );
         }
 
-        const res = await fetch(
+        const res = await apiFetch(
           `${process.env.NEXT_PUBLIC_API_URL}/payments/${transactionId}`
         );
 
@@ -175,7 +195,24 @@ export default function PaymentPage() {
       ? "Mengecek Pembayaran..."
       : paymentData?.status === "paid"
         ? "Pembayaran Berhasil"
+        : paymentData?.status === "expired"
+          ? "Pembayaran Kedaluwarsa"
+          : paymentData?.status === "failed"
+            ? "Pembayaran Gagal"
         : "Menunggu Pembayaran";
+
+  const subtotal =
+    Number(paymentData?.gross_amount || 0) -
+    Number(paymentData?.admin_fee_amount || 0) -
+    Number(paymentData?.admin_fee_tax || 0);
+
+  const statusClass =
+    paymentData?.status === "paid"
+      ? "border-green-200 bg-green-50 text-green-600"
+      : paymentData?.status === "expired" ||
+          paymentData?.status === "failed"
+        ? "border-red-200 bg-red-50 text-red-600"
+        : "border-orange-200 bg-orange-50 text-orange-500";
 
   return (
     <main className="bg-[#F8FAFC] pb-12 pt-5 lg:pb-16 lg:pt-8">
@@ -233,7 +270,7 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-500 lg:mt-0">
+          <div className={`mt-5 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold lg:mt-0 ${statusClass}`}>
             <Clock3 size={16} />
             {paymentStatusLabel}
           </div>
@@ -398,7 +435,22 @@ export default function PaymentPage() {
               </div>
 
               <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4 lg:p-5">
-                <p className="text-sm text-gray-400">
+                <div className="space-y-2 border-b border-orange-100 pb-4 text-sm">
+                  <div className="flex justify-between gap-4 text-gray-500">
+                    <span>Subtotal</span>
+                    <span>Rp {subtotal.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="flex justify-between gap-4 text-gray-500">
+                    <span>Biaya admin</span>
+                    <span>Rp {Number(paymentData?.admin_fee_amount || 0).toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="flex justify-between gap-4 text-gray-500">
+                    <span>PPN biaya admin (11%)</span>
+                    <span>Rp {Number(paymentData?.admin_fee_tax || 0).toLocaleString("id-ID")}</span>
+                  </div>
+                </div>
+
+                <p className="mt-4 text-sm text-gray-400">
                   Total Pembayaran
                 </p>
 
@@ -412,7 +464,7 @@ export default function PaymentPage() {
                   Status
                 </p>
 
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-500">
+                <div className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${statusClass}`}>
                   <Clock3 size={14} />
                   {paymentStatusLabel}
                 </div>

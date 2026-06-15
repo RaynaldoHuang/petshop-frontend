@@ -1,7 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Eye,
+  PackageCheck,
+  Search,
+  ShoppingBag,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 type OrderItem = {
   id: number;
@@ -25,46 +38,71 @@ type Order = {
 };
 
 const ORDER_STATUS_OPTIONS = [
-  "new",
-  "processed",
-  "shipped",
-  "completed",
-  "cancelled",
+  { value: "new", label: "Baru" },
+  { value: "processed", label: "Diproses" },
+  { value: "shipped", label: "Dikirim" },
+  { value: "completed", label: "Selesai" },
+  { value: "cancelled", label: "Dibatalkan" },
 ];
 
-function getPaymentBadgeClass(paymentStatus: string) {
-  switch (paymentStatus) {
-    case "paid":
-    case "settlement":
-      return "bg-green-100 text-green-700";
-    case "pending":
-      return "bg-yellow-100 text-yellow-700";
-    case "failed":
-    case "deny":
-    case "cancelled":
-    case "expire":
-    case "expired":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
+const ITEMS_PER_PAGE = 8;
+
+function formatCurrency(value: string | number) {
+  return `Rp ${Number(value).toLocaleString("id-ID")}`;
 }
 
-function getOrderBadgeClass(orderStatus: string) {
-  switch (orderStatus) {
-    case "new":
-      return "bg-gray-100 text-gray-700";
-    case "processed":
-      return "bg-blue-100 text-blue-700";
-    case "shipped":
-      return "bg-indigo-100 text-indigo-700";
-    case "completed":
-      return "bg-green-100 text-green-700";
-    case "cancelled":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function paymentLabel(status: string) {
+  const labels: Record<string, string> = {
+    paid: "Lunas",
+    settlement: "Lunas",
+    pending: "Menunggu",
+    failed: "Gagal",
+    deny: "Ditolak",
+    cancelled: "Dibatalkan",
+    cancel: "Dibatalkan",
+    expire: "Kedaluwarsa",
+    expired: "Kedaluwarsa",
+  };
+
+  return labels[status] || status;
+}
+
+function paymentBadge(status: string) {
+  if (["paid", "settlement"].includes(status)) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
+
+  if (status === "pending") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  return "border-red-200 bg-red-50 text-red-700";
+}
+
+function orderBadge(status: string) {
+  const classes: Record<string, string> = {
+    new: "border-slate-200 bg-slate-50 text-slate-700",
+    processed: "border-blue-200 bg-blue-50 text-blue-700",
+    shipped: "border-violet-200 bg-violet-50 text-violet-700",
+    completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    cancelled: "border-red-200 bg-red-50 text-red-700",
+  };
+
+  return classes[status] || classes.new;
+}
+
+function orderLabel(status: string) {
+  return ORDER_STATUS_OPTIONS.find((item) => item.value === status)?.label || status;
 }
 
 export default function AdminOrdersPage() {
@@ -72,6 +110,10 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     async function fetchOrders() {
@@ -79,18 +121,17 @@ export default function AdminOrdersPage() {
         setLoading(true);
         setError("");
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
+        const response = await apiFetch("/admin/orders", {
           cache: "no-store",
         });
 
-        if (!res.ok) {
-          throw new Error("Gagal mengambil data order");
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data pesanan.");
         }
 
-        const data: Order[] = await res.json();
-        setOrders(data);
+        setOrders(await response.json());
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+        setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
       } finally {
         setLoading(false);
       }
@@ -99,186 +140,515 @@ export default function AdminOrdersPage() {
     fetchOrders();
   }, []);
 
+  const filteredOrders = useMemo(() => {
+    const keyword = query.trim().toLowerCase();
+
+    return orders.filter((order) => {
+      const matchesStatus =
+        statusFilter === "all" || order.order_status === statusFilter;
+      const matchesQuery =
+        !keyword ||
+        String(order.id).includes(keyword) ||
+        order.customer_name.toLowerCase().includes(keyword) ||
+        order.customer_phone.toLowerCase().includes(keyword) ||
+        order.items.some((item) => item.product_name.toLowerCase().includes(keyword));
+
+      return matchesStatus && matchesQuery;
+    });
+  }, [orders, query, statusFilter]);
+
+  const summary = useMemo(
+    () => ({
+      total: orders.length,
+      waiting: orders.filter((order) => order.order_status === "new").length,
+      processing: orders.filter((order) =>
+        ["processed", "shipped"].includes(order.order_status),
+      ).length,
+      completed: orders.filter((order) => order.order_status === "completed").length,
+    }),
+    [orders],
+  );
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredOrders.length / ITEMS_PER_PAGE),
+  );
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedOrders = filteredOrders.slice(
+    (safeCurrentPage - 1) * ITEMS_PER_PAGE,
+    safeCurrentPage * ITEMS_PER_PAGE,
+  );
+
   async function handleStatusChange(id: number, orderStatus: string) {
     try {
       setUpdatingId(id);
       setError("");
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/orders/${id}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            order_status: orderStatus,
-          }),
+      const response = await apiFetch(`/admin/orders/${id}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          order_status: orderStatus,
+        }),
+      });
+      const data = await response.json();
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Gagal memperbarui status order");
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal memperbarui status pesanan.");
       }
 
-      setOrders((prev) =>
-        prev.map((order) =>
+      setOrders((current) =>
+        current.map((order) =>
           order.id === id
             ? { ...order, order_status: data.data.order_status }
             : order,
         ),
       );
+      toast.success(`Pesanan #${id} diperbarui menjadi ${orderLabel(orderStatus)}.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
     } finally {
       setUpdatingId(null);
     }
   }
 
-  return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 md:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Admin Orders</h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Lihat dan kelola status pesanan customer.
-            </p>
-          </div>
+  const summaryCards = [
+    {
+      label: "Total Pesanan",
+      value: summary.total,
+      icon: ShoppingBag,
+      color: "bg-blue-50 text-blue-700",
+    },
+    {
+      label: "Pesanan Baru",
+      value: summary.waiting,
+      icon: Clock3,
+      color: "bg-amber-50 text-amber-700",
+    },
+    {
+      label: "Dalam Proses",
+      value: summary.processing,
+      icon: PackageCheck,
+      color: "bg-violet-50 text-violet-700",
+    },
+    {
+      label: "Selesai",
+      value: summary.completed,
+      icon: CheckCircle2,
+      color: "bg-emerald-50 text-emerald-700",
+    },
+  ];
 
-          <Link
-            href="/admin/products"
-            className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-          >
-            Kelola Produk
-          </Link>
+  return (
+    <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[1500px]">
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-orange-500">Order management</p>
+          <h2 className="mt-1 text-3xl font-bold tracking-tight text-[#17376f]">
+            Daftar Pesanan
+          </h2>
+          <p className="mt-2 text-sm text-slate-500">
+            Pantau pembayaran dan perbarui proses pesanan pelanggan.
+          </p>
         </div>
 
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article
+                key={card.label}
+                className="rounded-lg border border-slate-200 bg-white p-5"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">{card.label}</p>
+                    <p className="mt-2 text-2xl font-bold text-slate-900">{card.value}</p>
+                  </div>
+                  <div className={`rounded-md p-3 ${card.color}`}>
+                    <Icon size={21} />
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+
         {error ? (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          <div className="mt-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         ) : null}
 
-        {loading ? (
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">Memuat data order...</p>
-          </div>
-        ) : orders.length === 0 ? (
-          <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Belum ada order
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Order customer akan muncul di sini.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="rounded-2xl bg-white p-6 shadow-sm"
-              >
-                <div className="flex flex-col gap-4 border-b border-gray-100 pb-4 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      Order #{order.id}
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-600">
-                      {order.customer_name} • {order.customer_phone}
-                    </p>
-                    <p className="mt-2 text-sm text-gray-500">
-                      {order.shipping_address}
-                    </p>
-                    <p className="mt-2 text-xs text-gray-400">
-                      {new Date(order.created_at).toLocaleString("id-ID")}
-                    </p>
-                  </div>
+        <section className="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <div className="flex flex-col gap-4 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h3 className="font-bold text-slate-900">Semua pesanan</h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Menampilkan {filteredOrders.length} dari {orders.length} pesanan
+              </p>
+            </div>
 
-                  <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <label className="relative block sm:w-72">
+                <Search
+                  size={17}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  value={query}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setCurrentPage(1);
+                  }}
+                  placeholder="Cari ID, pelanggan, atau produk"
+                  className="h-10 w-full rounded-md border border-slate-200 bg-white pl-10 pr-3 text-sm"
+                />
+              </label>
+
+              <label className="relative block sm:w-44">
+                <select
+                  value={statusFilter}
+                  onChange={(event) => {
+                    setStatusFilter(event.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="h-10 w-full appearance-none rounded-md border border-slate-200 bg-white pl-3 pr-9 text-sm font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-[#315b9f]"
+                >
+                  <option value="all">Semua status</option>
+                  {ORDER_STATUS_OPTIONS.map((status) => (
+                    <option key={status.value} value={status.value}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={16}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-[900px] w-full text-left text-sm">
+              <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Pesanan</th>
+                  <th className="px-4 py-3">Pelanggan</th>
+                  <th className="px-4 py-3">Total</th>
+                  <th className="px-4 py-3">Pembayaran</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Aksi</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100">
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
+                      Memuat data pesanan...
+                    </td>
+                  </tr>
+                ) : filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-12 text-center">
+                      <p className="font-semibold text-slate-700">Pesanan tidak ditemukan</p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Coba ubah kata pencarian atau filter status.
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedOrders.map((order) => {
+                    const totalQuantity = order.items.reduce(
+                      (total, item) => total + item.quantity,
+                      0,
+                    );
+
+                    return (
+                      <tr key={order.id} className="hover:bg-slate-50/70">
+                        <td className="px-4 py-4">
+                          <p className="font-bold text-[#17376f]">#{order.id}</p>
+                          <p className="mt-1 whitespace-nowrap text-xs text-slate-500">
+                            {formatDate(order.created_at)}
+                          </p>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <p className="font-semibold text-slate-800">
+                            {order.customer_name}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {order.customer_phone}
+                          </p>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <p className="font-bold text-slate-900">
+                          {formatCurrency(order.total_price)}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {totalQuantity} item
+                          </p>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <span
+                            className={`inline-flex rounded-md border px-2.5 py-1 text-xs font-bold ${paymentBadge(
+                              order.payment_status,
+                            )}`}
+                          >
+                            {paymentLabel(order.payment_status)}
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <label className="relative block w-36">
+                            <select
+                              value={order.order_status}
+                              onChange={(event) =>
+                                handleStatusChange(order.id, event.target.value)
+                              }
+                              disabled={updatingId === order.id}
+                              aria-label={`Update status pesanan ${order.id}`}
+                              className={`h-9 w-full appearance-none rounded-md border py-0 pl-2.5 pr-8 text-xs font-bold outline-none transition disabled:cursor-wait disabled:opacity-60 ${orderBadge(
+                                order.order_status,
+                              )}`}
+                            >
+                              {ORDER_STATUS_OPTIONS.map((status) => (
+                                <option key={status.value} value={status.value}>
+                                  {status.label}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown
+                              size={14}
+                              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-current opacity-60"
+                            />
+                          </label>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOrder(order)}
+                            className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold text-[#17376f] transition hover:border-[#315b9f] hover:bg-blue-50"
+                          >
+                            <Eye size={15} />
+                            Detail
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {!loading && filteredOrders.length > 0 ? (
+            <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-slate-500">
+                Menampilkan{" "}
+                <span className="font-semibold text-slate-700">
+                  {(safeCurrentPage - 1) * ITEMS_PER_PAGE + 1}-
+                  {Math.min(safeCurrentPage * ITEMS_PER_PAGE, filteredOrders.length)}
+                </span>{" "}
+                dari{" "}
+                <span className="font-semibold text-slate-700">
+                  {filteredOrders.length}
+                </span>{" "}
+                pesanan
+              </p>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={safeCurrentPage === 1}
+                  className="grid h-8 w-8 place-items-center rounded-md border border-slate-200 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Halaman sebelumnya"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, index) => index + 1)
+                  .filter(
+                    (page) =>
+                      page === 1 ||
+                      page === totalPages ||
+                      Math.abs(page - safeCurrentPage) <= 1,
+                  )
+                  .map((page, index, visiblePages) => (
+                    <div key={page} className="flex items-center gap-1">
+                      {index > 0 && page - visiblePages[index - 1] > 1 ? (
+                        <span className="px-1 text-xs text-slate-400">...</span>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        className={`h-8 min-w-8 rounded-md border px-2 text-xs font-bold transition ${
+                          page === safeCurrentPage
+                            ? "border-[#17376f] bg-[#17376f] text-white"
+                            : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </div>
+                  ))}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
+                  disabled={safeCurrentPage === totalPages}
+                  className="grid h-8 w-8 place-items-center rounded-md border border-slate-200 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Halaman berikutnya"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </section>
+      </div>
+
+      {selectedOrder ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-950/45"
+            onClick={() => setSelectedOrder(null)}
+            aria-label="Tutup detail pesanan"
+          />
+
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="order-detail-title"
+            className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-slate-200 bg-white"
+          >
+            <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-orange-500">
+                  Detail pesanan
+                </p>
+                <h3
+                  id="order-detail-title"
+                  className="mt-1 text-xl font-bold text-[#17376f]"
+                >
+                  Pesanan #{selectedOrder.id}
+                </h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  {formatDate(selectedOrder.created_at)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(null)}
+                className="grid h-9 w-9 place-items-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50"
+                aria-label="Tutup"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-6 p-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-md border border-slate-200 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Pelanggan
+                  </p>
+                  <p className="mt-2 font-bold text-slate-800">
+                    {selectedOrder.customer_name}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {selectedOrder.customer_phone}
+                  </p>
+                </div>
+                <div className="rounded-md border border-slate-200 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Status
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <span
-                      className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${getPaymentBadgeClass(
-                        order.payment_status,
+                      className={`rounded-md border px-2.5 py-1 text-xs font-bold ${paymentBadge(
+                        selectedOrder.payment_status,
                       )}`}
                     >
-                      Payment: {order.payment_status}
+                      {paymentLabel(selectedOrder.payment_status)}
                     </span>
                     <span
-                      className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${getOrderBadgeClass(
-                        order.order_status,
+                      className={`rounded-md border px-2.5 py-1 text-xs font-bold ${orderBadge(
+                        selectedOrder.order_status,
                       )}`}
                     >
-                      Order: {order.order_status}
+                      {orderLabel(selectedOrder.order_status)}
                     </span>
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-4 space-y-3">
-                  {order.items.map((item) => (
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Alamat pengiriman
+                </p>
+                <p className="mt-2 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
+                  {selectedOrder.shipping_address}
+                </p>
+              </div>
+
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Produk
+                  </p>
+                  <p className="text-xs font-semibold text-slate-500">
+                    {selectedOrder.items.reduce(
+                      (total, item) => total + item.quantity,
+                      0,
+                    )}{" "}
+                    item
+                  </p>
+                </div>
+                <div className="divide-y divide-slate-100 rounded-md border border-slate-200">
+                  {selectedOrder.items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-start justify-between gap-4 rounded-xl border border-gray-100 px-4 py-3"
+                      className="flex items-start justify-between gap-4 p-3"
                     >
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-semibold text-slate-800">
                           {item.product_name}
                         </p>
-                        <p className="text-sm text-gray-500">
-                          {item.quantity} x Rp{" "}
-                          {Number(item.price).toLocaleString("id-ID")}
+                        <p className="mt-1 text-xs text-slate-500">
+                          {item.quantity} x {formatCurrency(item.price)}
                         </p>
                       </div>
-
-                      <p className="font-semibold text-orange-600">
-                        Rp {Number(item.subtotal).toLocaleString("id-ID")}
+                      <p className="whitespace-nowrap text-sm font-bold text-slate-800">
+                        {formatCurrency(item.subtotal)}
                       </p>
                     </div>
                   ))}
                 </div>
-
-                <div className="mt-5 grid gap-4 border-t border-gray-100 pt-4 md:grid-cols-2 md:items-end">
-                  <div>
-                    <span className="text-sm text-gray-500">Total Order</span>
-                    <p className="text-lg font-bold text-gray-900">
-                      Rp {Number(order.total_price).toLocaleString("id-ID")}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                      Update Status Order
-                    </label>
-                    <select
-                      value={order.order_status}
-                      onChange={(e) =>
-                        handleStatusChange(order.id, e.target.value)
-                      }
-                      disabled={updatingId === order.id}
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-orange-500 disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {ORDER_STATUS_OPTIONS.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {updatingId === order.id ? (
-                  <p className="mt-3 text-sm text-gray-500">
-                    Memperbarui status...
-                  </p>
-                ) : null}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+
+              <div className="flex items-center justify-between border-t border-slate-200 pt-4">
+                <p className="font-semibold text-slate-600">Total pesanan</p>
+                <p className="text-xl font-bold text-[#17376f]">
+                  {formatCurrency(selectedOrder.total_price)}
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

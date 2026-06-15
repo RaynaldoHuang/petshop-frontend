@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import ImageExtension from "@tiptap/extension-image";
+import { apiFetch } from "@/lib/api";
 
 type Props = {
     value: string;
@@ -35,7 +36,7 @@ export default function ArticleRichTextEditor({ value, onChange }: Props) {
         editorProps: {
             attributes: {
                 class:
-                    "article-editor min-h-[380px] rounded-b-xl border-x border-b border-gray-300 bg-white px-5 py-5 text-sm leading-7 outline-none",
+                    "article-editor min-h-[320px] rounded-b-md border-x border-b border-slate-200 bg-white px-5 py-5 text-sm leading-7 outline-none",
             },
         },
         onUpdate({ editor }) {
@@ -48,8 +49,8 @@ export default function ArticleRichTextEditor({ value, onChange }: Props) {
 
         const currentHtml = editor.getHTML();
 
-        if (value && value !== currentHtml) {
-            editor.commands.setContent(value);
+        if ((value || "") !== currentHtml) {
+            editor.commands.setContent(value || "");
         }
     }, [value, editor]);
 
@@ -64,7 +65,7 @@ export default function ArticleRichTextEditor({ value, onChange }: Props) {
         const formData = new FormData();
         formData.append("image", file);
 
-        const res = await fetch(`${API}/editor/upload-image`, {
+        const res = await apiFetch(`${API}/admin/editor/upload-image`, {
             method: "POST",
             body: formData,
             headers: {
@@ -91,14 +92,14 @@ export default function ArticleRichTextEditor({ value, onChange }: Props) {
     }
 
     const buttonClass = (active = false) =>
-        `rounded-lg border px-3 py-2 text-sm font-semibold transition ${active
+        `rounded-md border px-3 py-2 text-sm font-semibold transition ${active
             ? "border-orange-500 bg-orange-500 text-white"
             : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100"
         }`;
 
     return (
-        <div className="overflow-hidden rounded-xl">
-            <div className="flex flex-wrap gap-2 rounded-t-xl border border-gray-300 bg-gray-50 p-3">
+        <div className="overflow-hidden rounded-md">
+            <div className="flex flex-wrap gap-2 rounded-t-md border border-slate-200 bg-slate-50 p-3">
                 <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}

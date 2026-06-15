@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useParams } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 
 type OrderItem = {
     id: number;
@@ -90,7 +91,7 @@ export default function OrderDetailPage() {
                     "token"
                 );
 
-            const res = await fetch(
+            const res = await apiFetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/payments/retry/${order.id}`,
                 {
                     method: "POST",
@@ -137,7 +138,7 @@ export default function OrderDetailPage() {
                 const token =
                     localStorage.getItem("token");
 
-                const res = await fetch(
+                const res = await apiFetch(
                     `${process.env.NEXT_PUBLIC_API_URL}/customer/orders/${params.id}`,
                     {
                         headers: {
