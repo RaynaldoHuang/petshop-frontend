@@ -4,14 +4,17 @@
 import { FormEvent, useEffect, useState } from "react";
 import {
   ChevronDown,
+  KeyRound,
   Plus,
   ShieldCheck,
+  Trash2,
   UserCheck,
   UserX,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 type AdminUser = {
   id: number;
@@ -24,12 +27,21 @@ type AdminUser = {
 };
 
 export default function AdminUsersPage() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<AdminUser | null>(null);
+  const [deleteUser, setDeleteUser] = useState<AdminUser | null>(null);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    password: "",
+    password_confirmation: "",
+  });
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -137,6 +149,81 @@ export default function AdminUsersPage() {
     });
   }
 
+  function closePasswordDialog() {
+    if (savingPassword) return;
+    setPasswordUser(null);
+    setPasswordForm({
+      password: "",
+      password_confirmation: "",
+    });
+    setError("");
+  }
+
+  async function changePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!passwordUser) return;
+
+    if (passwordForm.password !== passwordForm.password_confirmation) {
+      setError("Konfirmasi password tidak sama.");
+      return;
+    }
+
+    try {
+      setSavingPassword(true);
+      setError("");
+      const response = await apiFetch(
+        `/admin/users/${passwordUser.id}/password`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(passwordForm),
+        },
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal mengganti password.");
+      }
+
+      setPasswordUser(null);
+      setPasswordForm({
+        password: "",
+        password_confirmation: "",
+      });
+      toast.success(data.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setSavingPassword(false);
+    }
+  }
+
+  async function removeUser() {
+    if (!deleteUser) return;
+
+    try {
+      setDeleting(true);
+      setError("");
+      const response = await apiFetch(`/admin/users/${deleteUser.id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal menghapus akun.");
+      }
+
+      setUsers((current) => current.filter((item) => item.id !== deleteUser.id));
+      setDeleteUser(null);
+      toast.success(data.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setDeleteUser(null);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <div className="mx-auto max-w-7xl">
@@ -184,6 +271,7 @@ export default function AdminUsersPage() {
                   <th className="px-5 py-4">Kontak</th>
                   <th className="px-5 py-4">Role</th>
                   <th className="px-5 py-4">Status</th>
+                  <th className="px-5 py-4">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -241,6 +329,38 @@ export default function AdminUsersPage() {
                         {user.is_active ? <UserCheck size={16} /> : <UserX size={16} />}
                         {user.is_active ? "Aktif" : "Nonaktif"}
                       </button>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setError("");
+                            setPasswordUser(user);
+                          }}
+                          className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 transition hover:border-[#315b9f] hover:text-[#17376f]"
+                        >
+                          <KeyRound size={15} />
+                          Password
+                        </button>
+                        <button
+                          type="button"
+                          disabled={currentUser?.id === user.id}
+                          onClick={() => {
+                            setError("");
+                            setDeleteUser(user);
+                          }}
+                          className="inline-flex h-9 items-center gap-2 rounded-md border border-red-200 bg-white px-3 text-xs font-bold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300"
+                          title={
+                            currentUser?.id === user.id
+                              ? "Akun yang sedang digunakan tidak dapat dihapus"
+                              : "Hapus akun"
+                          }
+                        >
+                          <Trash2 size={15} />
+                          Hapus
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -424,6 +544,148 @@ export default function AdminUsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {passwordUser ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-950/50"
+            onClick={closePasswordDialog}
+            aria-label="Tutup dialog password"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="password-admin-title"
+            className="relative z-10 w-full max-w-md rounded-lg border border-slate-200 bg-white"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-orange-500">
+                  Keamanan akun
+                </p>
+                <h3
+                  id="password-admin-title"
+                  className="mt-1 text-lg font-bold text-[#17376f]"
+                >
+                  Ganti Password
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Buat password baru untuk {passwordUser.name}.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closePasswordDialog}
+                className="rounded-md p-2 text-slate-400 hover:bg-slate-100"
+                aria-label="Tutup dialog"
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <form onSubmit={changePassword}>
+              <div className="space-y-4 p-5">
+                {error ? (
+                  <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {error}
+                  </div>
+                ) : null}
+                <Field
+                  label="Password baru"
+                  type="password"
+                  value={passwordForm.password}
+                  onChange={(password) =>
+                    setPasswordForm({ ...passwordForm, password })
+                  }
+                  placeholder="Minimal 8 karakter"
+                  minLength={8}
+                  required
+                />
+                <Field
+                  label="Konfirmasi password baru"
+                  type="password"
+                  value={passwordForm.password_confirmation}
+                  onChange={(password_confirmation) =>
+                    setPasswordForm({ ...passwordForm, password_confirmation })
+                  }
+                  placeholder="Ulangi password baru"
+                  minLength={8}
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4">
+                <button
+                  type="button"
+                  onClick={closePasswordDialog}
+                  disabled={savingPassword}
+                  className="h-10 rounded-md border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingPassword}
+                  className="inline-flex h-10 items-center gap-2 rounded-md bg-orange-500 px-4 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-60"
+                >
+                  <KeyRound size={16} />
+                  {savingPassword ? "Menyimpan..." : "Simpan Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      {deleteUser ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-950/50"
+            onClick={() => !deleting && setDeleteUser(null)}
+            aria-label="Tutup konfirmasi hapus"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-admin-title"
+            className="relative z-10 w-full max-w-md rounded-lg border border-slate-200 bg-white"
+          >
+            <div className="p-5">
+              <div className="mb-4 grid h-11 w-11 place-items-center rounded-md bg-red-50 text-red-600">
+                <Trash2 size={20} />
+              </div>
+              <h3 id="delete-admin-title" className="text-lg font-bold text-slate-900">
+                Hapus akun admin?
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Akun <strong className="text-slate-700">{deleteUser.name}</strong>{" "}
+                ({deleteUser.email}) akan kehilangan seluruh akses dashboard.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4">
+              <button
+                type="button"
+                onClick={() => setDeleteUser(null)}
+                disabled={deleting}
+                className="h-10 rounded-md border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={removeUser}
+                disabled={deleting}
+                className="inline-flex h-10 items-center gap-2 rounded-md bg-red-600 px-4 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                <Trash2 size={16} />
+                {deleting ? "Menghapus..." : "Ya, Hapus"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
