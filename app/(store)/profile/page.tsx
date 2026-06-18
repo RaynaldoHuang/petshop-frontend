@@ -1,6 +1,7 @@
 "use client";
 
 import AuthGuard from "@/components/AuthGuard";
+import OtpInput from "@/components/OtpInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { Eye, EyeOff } from "lucide-react";
@@ -170,15 +171,12 @@ export default function ProfilePage() {
                                     Kode OTP
                                 </label>
                                 <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
+                                    <OtpInput
                                         value={form.otp_code}
-                                        onChange={(e) =>
-                                            setForm({ ...form, otp_code: e.target.value })
+                                        onChange={(otp_code) =>
+                                            setForm({ ...form, otp_code })
                                         }
-                                        placeholder="Masukkan kode OTP"
-                                        className="h-12 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none transition focus:border-orange-500"
+                                        disabled={loading}
                                     />
                                     <button
                                         type="button"

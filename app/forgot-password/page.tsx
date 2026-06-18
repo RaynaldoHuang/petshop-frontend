@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import OtpInput from "@/components/OtpInput";
 
 import img5 from "@/public/image/img5.webp";
 
@@ -151,13 +152,10 @@ export default function ForgotPasswordPage() {
                                     <label className="mb-2 block text-sm text-[#19398A]">
                                         Kode OTP
                                     </label>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
+                                    <OtpInput
                                         value={otpCode}
-                                        onChange={(e) => setOtpCode(e.target.value)}
-                                        placeholder="Masukkan kode OTP"
-                                        className="h-12 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none transition focus:border-orange-500"
+                                        onChange={setOtpCode}
+                                        disabled={loading}
                                     />
                                     <p className="mt-2 text-xs text-gray-500">
                                         Cek kode OTP yang dikirim ke nomor telepon Anda.
