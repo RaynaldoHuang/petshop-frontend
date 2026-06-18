@@ -24,6 +24,8 @@ export default function LoginPage() {
     });
 
     const [loading, setLoading] = useState(false);
+    const [otpToken, setOtpToken] = useState("");
+    const [otpCode, setOtpCode] = useState("");
 
     const [error, setError] = useState("");
 
@@ -71,12 +73,67 @@ export default function LoginPage() {
                 );
             }
 
+            if (data.requires_otp) {
+                setOtpToken(data.otp_token);
+                toast.success(
+                    data.message || "Masukkan kode OTP yang dikirim"
+                );
+                return;
+            }
+
             login(data.token, data.user);
 
             toast.success(
                 "Login berhasil"
             );
 
+            router.push("/");
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Terjadi kesalahan"
+            );
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleVerifyOtp(
+        e: React.FormEvent<HTMLFormElement>
+    ) {
+        e.preventDefault();
+
+        try {
+            setLoading(true);
+            setError("");
+
+            const res = await fetch(
+                `${API}/auth/verify-otp`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({
+                        otp_token: otpToken,
+                        otp_code: otpCode,
+                    }),
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(
+                    data.message ||
+                    "Kode OTP tidak valid"
+                );
+            }
+
+            login(data.token, data.user);
+            toast.success("Login berhasil");
             router.push("/");
         } catch (err) {
             setError(
@@ -126,6 +183,50 @@ export default function LoginPage() {
                             </div>
                         ) : null}
 
+                        {otpToken ? (
+                            <form onSubmit={handleVerifyOtp}>
+                                <div className="space-y-5">
+                                    <div>
+                                        <label className="mb-2 block text-sm text-[#19398A]">
+                                            Kode OTP
+                                        </label>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={otpCode}
+                                            onChange={(e) =>
+                                                setOtpCode(e.target.value)
+                                            }
+                                            placeholder="Masukkan kode OTP"
+                                            className="h-12 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none transition focus:border-orange-500"
+                                        />
+                                        <p className="mt-2 text-xs text-gray-500">
+                                            Cek kode OTP yang dikirim ke nomor telepon Anda.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="mt-7 h-12 w-full cursor-pointer rounded-xl bg-orange-500 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70 lg:mt-8"
+                                >
+                                    {loading ? "Memverifikasi..." : "Verifikasi OTP"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setOtpToken("");
+                                        setOtpCode("");
+                                    }}
+                                    className="mt-4 h-11 w-full rounded-xl border border-gray-200 text-sm font-semibold text-[#19398A] transition hover:border-orange-300 hover:text-orange-500"
+                                >
+                                    Ubah nomor
+                                </button>
+                            </form>
+                        ) : (
+                        <>
                         <form
                             onSubmit={
                                 handleSubmit
@@ -282,6 +383,8 @@ export default function LoginPage() {
                         <div className="mt-6 text-center">
                             <p className="text-sm">Belum punya akun? <span className="text-[#19398A] underline"><Link href={"/register"}>Daftar disini</Link></span></p>
                         </div>
+                        </>
+                        )}
                     </div>
                 </div>
 

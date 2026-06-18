@@ -40,6 +40,9 @@ type Order = {
   customer_name: string;
   customer_phone: string;
   shipping_address: string;
+  shipping_courier?: string | null;
+  shipping_service?: string | null;
+  shipping_cost?: string | number | null;
   total_price: string;
   payment_status: string;
   order_status: string;
@@ -438,6 +441,13 @@ export default function CustomerOrdersPage() {
                         <h3 className="mt-2 text-2xl font-bold text-orange-500">
                           {formatCurrency(order.total_price)}
                         </h3>
+
+                        {order.shipping_courier ? (
+                          <p className="mt-1 text-xs text-orange-600">
+                            Termasuk ongkir {order.shipping_courier} {order.shipping_service} Rp{" "}
+                            {Number(order.shipping_cost || 0).toLocaleString("id-ID")}
+                          </p>
+                        ) : null}
 
                         <div className="mt-4 grid gap-2">
                           {order.latest_payment?.status === "pending" ? (

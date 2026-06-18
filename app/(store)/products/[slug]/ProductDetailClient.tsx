@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import {
     ChevronRight,
@@ -13,6 +15,8 @@ import {
 } from "lucide-react";
 
 import AddToCartButton from "@/components/AddToCartButton";
+import { useAuth } from "@/contexts/AuthContext";
+import { addToCart } from "@/lib/cart";
 import { getStorageUrl } from "@/lib/storage";
 
 type ProductImage = {
@@ -84,6 +88,8 @@ export default function ProductDetailClient({
     images: ProductImage[];
     relatedProducts: RelatedProduct[];
 }) {
+    const router = useRouter();
+    const { isLoggedIn } = useAuth();
 
     const [activeIndex, setActiveIndex] =
         useState(0);
@@ -96,13 +102,6 @@ export default function ProductDetailClient({
 
     const [quantity, setQuantity] =
         useState(1);
-
-    const token =
-        typeof window !== "undefined"
-            ? localStorage.getItem("token")
-            : null;
-
-    const isLoggedIn = !!token;
 
     /*
     =========================================
@@ -217,6 +216,35 @@ export default function ProductDetailClient({
         } catch {
             console.log("Share cancelled");
         }
+    }
+
+    function selectedCartItem() {
+        return {
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            price: Number(
+                activeVariant?.discount_price ||
+                activeVariant?.price ||
+                product.discount_price ||
+                product.price
+            ),
+            image: product.image,
+            stock: activeVariant?.stock || product.stock,
+            quantity,
+            variantName: activeVariant?.name || undefined,
+        };
+    }
+
+    function handleCheckoutNow() {
+        if (!isLoggedIn) {
+            setShowAuthModal(true);
+            return;
+        }
+
+        addToCart(selectedCartItem());
+        toast.success("Produk siap di-checkout");
+        router.push("/checkout");
     }
 
     return (
@@ -627,17 +655,7 @@ export default function ProductDetailClient({
                                 {/* CHECKOUT NOW */}
                                 <button
                                     type="button"
-                                    onClick={() => {
-
-                                        if (!isLoggedIn) {
-
-                                            setShowAuthModal(true);
-                                            return;
-                                        }
-
-                                        window.location.href =
-                                            "/checkout";
-                                    }}
+                                    onClick={handleCheckoutNow}
                                     className="w-full cursor-pointer rounded-lg border border-orange-500 px-6 py-3 text-sm font-medium text-orange-500 transition hover:bg-orange-50 sm:w-auto"
                                 >
                                     Checkout Sekarang

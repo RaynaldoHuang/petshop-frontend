@@ -437,7 +437,7 @@ export default function PaymentPage() {
               <div className="rounded-2xl border border-orange-100 bg-orange-50 p-4 lg:p-5">
                 <div className="space-y-2 border-b border-orange-100 pb-4 text-sm">
                   <div className="flex justify-between gap-4 text-gray-500">
-                    <span>Subtotal</span>
+                    <span>Subtotal + ongkir</span>
                     <span>Rp {subtotal.toLocaleString("id-ID")}</span>
                   </div>
                   <div className="flex justify-between gap-4 text-gray-500">

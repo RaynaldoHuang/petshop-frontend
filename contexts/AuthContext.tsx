@@ -56,6 +56,18 @@ export function AuthProvider({
     const [loading, setLoading] =
         useState(true);
 
+    function getSavedToken() {
+        return (
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token")
+        );
+    }
+
+    function clearSavedToken() {
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+    }
+
     async function getMe(
         savedToken: string
     ) {
@@ -74,9 +86,7 @@ export function AuthProvider({
             );
 
             if (!res.ok) {
-                localStorage.removeItem(
-                    "token"
-                );
+                clearSavedToken();
 
                 setUser(null);
 
@@ -91,9 +101,7 @@ export function AuthProvider({
 
             setToken(savedToken);
         } catch {
-            localStorage.removeItem(
-                "token"
-            );
+            clearSavedToken();
 
             setUser(null);
 
@@ -105,7 +113,7 @@ export function AuthProvider({
 
     async function refreshUser() {
         const savedToken =
-            localStorage.getItem("token");
+            getSavedToken();
 
         if (!savedToken) return;
 
@@ -133,8 +141,7 @@ export function AuthProvider({
     async function logout() {
         try {
             const savedToken =
-                localStorage.getItem("token") ||
-                sessionStorage.getItem("token");
+                getSavedToken();
 
             if (savedToken) {
                 await fetch(
@@ -153,9 +160,7 @@ export function AuthProvider({
             }
         } catch { }
 
-        localStorage.removeItem("token");
-
-        sessionStorage.removeItem("token");
+        clearSavedToken();
 
         setToken(null);
 
@@ -172,7 +177,7 @@ export function AuthProvider({
 
     useEffect(() => {
         const savedToken =
-            localStorage.getItem("token");
+            getSavedToken();
 
         if (!savedToken) {
             setLoading(false);
@@ -185,9 +190,7 @@ export function AuthProvider({
     useEffect(() => {
         function syncAuth() {
             const savedToken =
-                localStorage.getItem(
-                    "token"
-                );
+                getSavedToken();
 
             if (!savedToken) {
                 setUser(null);

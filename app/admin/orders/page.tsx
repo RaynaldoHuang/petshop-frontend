@@ -30,6 +30,15 @@ type Order = {
   customer_name: string;
   customer_phone: string;
   shipping_address: string;
+  shipping_city?: string | null;
+  shipping_district?: string | null;
+  shipping_subdistrict?: string | null;
+  shipping_zip_code?: string | null;
+  shipping_courier?: string | null;
+  shipping_service?: string | null;
+  shipping_cost?: string | number | null;
+  shipping_etd?: string | null;
+  shipping_weight?: number | null;
   total_price: string;
   payment_status: string;
   order_status: string;
@@ -601,8 +610,49 @@ export default function AdminOrdersPage() {
                 </p>
                 <p className="mt-2 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">
                   {selectedOrder.shipping_address}
+                  {selectedOrder.shipping_subdistrict ||
+                  selectedOrder.shipping_district ||
+                  selectedOrder.shipping_zip_code ? (
+                    <span className="mt-2 block text-xs font-semibold text-slate-500">
+                      {[
+                        selectedOrder.shipping_subdistrict,
+                        selectedOrder.shipping_district,
+                        selectedOrder.shipping_city,
+                        selectedOrder.shipping_zip_code,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </span>
+                  ) : null}
                 </p>
               </div>
+
+              {selectedOrder.shipping_courier ? (
+                <div className="rounded-md border border-orange-100 bg-orange-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-orange-500">
+                    Ongkir
+                  </p>
+                  <div className="mt-2 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
+                    <p>
+                      {selectedOrder.shipping_courier} {selectedOrder.shipping_service}
+                      {selectedOrder.shipping_district
+                        ? ` ke ${selectedOrder.shipping_district}`
+                        : selectedOrder.shipping_city
+                          ? ` ke ${selectedOrder.shipping_city}`
+                          : ""}
+                    </p>
+                    <p className="font-bold sm:text-right">
+                      {formatCurrency(selectedOrder.shipping_cost || 0)}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Estimasi {selectedOrder.shipping_etd || "-"} hari
+                    </p>
+                    <p className="text-xs text-slate-500 sm:text-right">
+                      Berat {Number(selectedOrder.shipping_weight || 0).toLocaleString("id-ID")} gram
+                    </p>
+                  </div>
+                </div>
+              ) : null}
 
               <div>
                 <div className="mb-3 flex items-center justify-between">

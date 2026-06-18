@@ -17,6 +17,7 @@ import {
   Megaphone,
   Image as ImageIcon,
   Tags,
+  Truck,
   Zap,
   FileText,
   ShieldCheck,
@@ -50,6 +51,7 @@ const menuGroups = [
       { label: "Pengguna & Role", href: "/admin/users", icon: ShieldCheck },
       { label: "Pelanggan", href: "/admin/customers", icon: Users },
       { label: "Pembayaran", href: "/admin/payment-methods", icon: CreditCard },
+      { label: "RajaOngkir", href: "/admin/rajaongkir", icon: Truck },
     ],
   },
 ];
@@ -66,6 +68,7 @@ const pageTitles: Record<string, string> = {
   "/admin/users": "Pengguna & Role",
   "/admin/customers": "Pelanggan",
   "/admin/payment-methods": "Metode Pembayaran",
+  "/admin/rajaongkir": "RajaOngkir",
 };
 
 export default function AdminLayout({
