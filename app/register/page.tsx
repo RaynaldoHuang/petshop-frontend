@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import OtpInput from "@/components/OtpInput";
+import OtpResendButton from "@/components/OtpResendButton";
 
 import { Eye, EyeOff } from "lucide-react";
 
@@ -40,15 +41,11 @@ export default function RegisterPage() {
         setShowConfirmPassword,
     ] = useState(false);
 
-    async function handleSubmit(
-        e: React.FormEvent
-    ) {
-        e.preventDefault();
-
+    async function requestOtp() {
         try {
             setLoading(true);
-
             setError("");
+            setOtpCode("");
 
             if (
                 form.password !==
@@ -114,6 +111,13 @@ export default function RegisterPage() {
         } finally {
             setLoading(false);
         }
+    }
+
+    async function handleSubmit(
+        e: React.FormEvent
+    ) {
+        e.preventDefault();
+        await requestOtp();
     }
 
     async function handleVerifyOtp(
@@ -219,6 +223,12 @@ export default function RegisterPage() {
                                 >
                                     {loading ? "Memverifikasi..." : "Verifikasi OTP"}
                                 </button>
+
+                                <OtpResendButton
+                                    key={otpToken}
+                                    loading={loading}
+                                    onResend={requestOtp}
+                                />
 
                                 <button
                                     type="button"

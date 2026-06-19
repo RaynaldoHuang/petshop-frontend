@@ -2,6 +2,7 @@
 
 import AuthGuard from "@/components/AuthGuard";
 import OtpInput from "@/components/OtpInput";
+import OtpResendButton from "@/components/OtpResendButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { Eye, EyeOff } from "lucide-react";
@@ -82,6 +83,7 @@ export default function ProfilePage() {
             }
 
             setOtpToken(data.otp_token);
+            setForm({ ...form, otp_code: "" });
             toast.success(data.message || "Kode OTP sudah dikirim");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
@@ -178,14 +180,23 @@ export default function ProfilePage() {
                                         }
                                         disabled={loading}
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={requestOtp}
-                                        disabled={otpLoading}
-                                        className="h-12 rounded-xl border border-[#19398A] px-5 text-sm font-bold text-[#19398A] transition hover:bg-[#19398A] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
-                                    >
-                                        {otpLoading ? "Mengirim..." : "Kirim OTP"}
-                                    </button>
+                                    {otpToken ? (
+                                        <OtpResendButton
+                                            key={otpToken}
+                                            loading={otpLoading}
+                                            onResend={requestOtp}
+                                            className="h-12 rounded-xl border border-[#19398A] px-5 text-sm font-bold text-[#19398A] transition hover:bg-[#19398A] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+                                        />
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={requestOtp}
+                                            disabled={otpLoading}
+                                            className="h-12 rounded-xl border border-[#19398A] px-5 text-sm font-bold text-[#19398A] transition hover:bg-[#19398A] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+                                        >
+                                            {otpLoading ? "Mengirim..." : "Kirim OTP"}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 

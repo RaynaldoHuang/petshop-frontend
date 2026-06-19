@@ -64,6 +64,9 @@ export default function CreateProductPage() {
   const [stock, setStock] =
     useState("");
 
+  const [weightGrams, setWeightGrams] =
+    useState("1000");
+
   const [soldCount, setSoldCount] =
     useState("0");
 
@@ -227,6 +230,11 @@ export default function CreateProductPage() {
       formData.append(
         "stock",
         stock
+      );
+
+      formData.append(
+        "weight_grams",
+        weightGrams
       );
 
       formData.append(
@@ -525,6 +533,15 @@ OPTIONS
                   type="number"
                   value={stock}
                   onChange={setStock}
+                  required
+                />
+
+                <Input
+                  label="Berat Produk (gram)"
+                  type="number"
+                  value={weightGrams}
+                  onChange={setWeightGrams}
+                  placeholder="Contoh: 250"
                   required
                 />
 

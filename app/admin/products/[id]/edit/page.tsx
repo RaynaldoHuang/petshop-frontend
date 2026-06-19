@@ -54,6 +54,7 @@ type Product = {
   discount_price: string | number | null;
 
   stock: number;
+  weight_grams?: number | null;
   sold_count: number;
 
   image: string | null;
@@ -105,6 +106,9 @@ export default function EditProductPage() {
 
   const [stock, setStock] =
     useState("");
+
+  const [weightGrams, setWeightGrams] =
+    useState("1000");
 
   const [soldCount, setSoldCount] =
     useState("0");
@@ -235,6 +239,12 @@ export default function EditProductPage() {
           product.stock !== null
             ? String(product.stock)
             : ""
+        );
+
+        setWeightGrams(
+          product.weight_grams !== null && product.weight_grams !== undefined
+            ? String(product.weight_grams)
+            : "1000"
         );
 
         setSoldCount(
@@ -470,6 +480,11 @@ export default function EditProductPage() {
       );
 
       formData.append(
+        "weight_grams",
+        weightGrams
+      );
+
+      formData.append(
         "sold_count",
         soldCount
       );
@@ -660,14 +675,21 @@ export default function EditProductPage() {
                   />
 
                   <Input
-                    label="Stock"
+                    label="Stok"
                     type="number"
                     value={stock}
                     onChange={setStock}
                   />
 
                   <Input
-                    label="Terjual"
+                    label="Berat Produk (gram)"
+                    type="number"
+                    value={weightGrams}
+                    onChange={setWeightGrams}
+                  />
+
+                  <Input
+                    label="Jumlah Terjual"
                     type="number"
                     value={soldCount}
                     onChange={setSoldCount}

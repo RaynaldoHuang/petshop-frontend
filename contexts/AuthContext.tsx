@@ -29,7 +29,8 @@ type AuthContextType = {
 
     login: (
         token: string,
-        user: User
+        user: User,
+        trustedDeviceToken?: string | null
     ) => void;
 
     logout: () => Promise<void>;
@@ -66,6 +67,17 @@ export function AuthProvider({
     function clearSavedToken() {
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
+    }
+
+    function saveTrustedDeviceToken(
+        trustedDeviceToken?: string | null
+    ) {
+        if (!trustedDeviceToken) return;
+
+        localStorage.setItem(
+            "trusted_device_token",
+            trustedDeviceToken
+        );
     }
 
     async function getMe(
@@ -122,11 +134,16 @@ export function AuthProvider({
 
     function login(
         newToken: string,
-        newUser: User
+        newUser: User,
+        trustedDeviceToken?: string | null
     ) {
         localStorage.setItem(
             "token",
             newToken
+        );
+
+        saveTrustedDeviceToken(
+            trustedDeviceToken
         );
 
         setToken(newToken);

@@ -782,6 +782,12 @@ export default function CheckoutPage() {
                 <SectionTitle icon={<Truck size={18} />} title="Pengiriman" badge="3" />
 
                 <div className="mt-5">
+                  {shippingWeight > 0 ? (
+                    <p className="mb-3 text-xs font-semibold text-gray-500">
+                      Total berat pengiriman: {shippingWeight.toLocaleString("id-ID")} gram
+                    </p>
+                  ) : null}
+
                   <div>
                     {shippingLoading ? (
                       <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">

@@ -318,7 +318,7 @@ export default function RajaOngkirAdminPage() {
             </p>
           </div>
 
-          <form onSubmit={saveSetting} className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_180px_190px_auto] lg:items-end">
+          <form onSubmit={saveSetting} className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_220px_190px_auto] lg:items-end">
             <label className="relative block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
                 Cari origin
@@ -370,15 +370,21 @@ export default function RajaOngkirAdminPage() {
 
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
-                Berat/item
+                Berat Default / Item
               </span>
-              <input
-                type="number"
-                min={1}
-                value={defaultWeight}
-                onChange={(event) => setDefaultWeight(event.target.value)}
-                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
-              />
+              <div className="flex h-10 overflow-hidden rounded-md border border-slate-200 bg-white focus-within:border-[#315b9f] focus-within:ring-2 focus-within:ring-[#315b9f]/10">
+                <input
+                  type="number"
+                  min={1}
+                  value={defaultWeight}
+                  onChange={(event) => setDefaultWeight(event.target.value)}
+                  className="h-full min-w-0 flex-1 px-3 text-sm outline-none"
+                  placeholder="1000"
+                />
+                <span className="flex h-full items-center border-l border-slate-200 bg-slate-50 px-3 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  gram
+                </span>
+              </div>
             </label>
 
             <div className="flex h-10 items-center justify-between gap-4 rounded-md border border-slate-200 bg-white px-3">

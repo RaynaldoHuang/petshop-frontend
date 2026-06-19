@@ -8,12 +8,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import OtpInput from "@/components/OtpInput";
+import OtpResendButton from "@/components/OtpResendButton";
 
 import { Eye, EyeOff } from "lucide-react";
 
 import img5 from "@/public/image/img5.webp";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+const TRUSTED_DEVICE_TOKEN_KEY = "trusted_device_token";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -36,14 +38,11 @@ export default function LoginPage() {
     const [rememberMe, setRememberMe] =
         useState(false);
 
-    async function handleSubmit(
-        e: React.FormEvent<HTMLFormElement>
-    ) {
-        e.preventDefault();
-
+    async function requestOtp() {
         try {
             setLoading(true);
             setError("");
+            setOtpCode("");
 
             const res = await fetch(
                 `${API}/login`,
@@ -61,6 +60,9 @@ export default function LoginPage() {
                     body: JSON.stringify({
                         phone: form.phone,
                         password: form.password,
+                        trusted_device_token: localStorage.getItem(
+                            TRUSTED_DEVICE_TOKEN_KEY
+                        ),
                     }),
                 }
             );
@@ -82,7 +84,11 @@ export default function LoginPage() {
                 return;
             }
 
-            login(data.token, data.user);
+            login(
+                data.token,
+                data.user,
+                data.trusted_device_token
+            );
 
             toast.success(
                 "Login berhasil"
@@ -98,6 +104,13 @@ export default function LoginPage() {
         } finally {
             setLoading(false);
         }
+    }
+
+    async function handleSubmit(
+        e: React.FormEvent<HTMLFormElement>
+    ) {
+        e.preventDefault();
+        await requestOtp();
     }
 
     async function handleVerifyOtp(
@@ -133,7 +146,11 @@ export default function LoginPage() {
                 );
             }
 
-            login(data.token, data.user);
+            login(
+                data.token,
+                data.user,
+                data.trusted_device_token
+            );
             toast.success("Login berhasil");
             router.push("/");
         } catch (err) {
@@ -209,6 +226,12 @@ export default function LoginPage() {
                                 >
                                     {loading ? "Memverifikasi..." : "Verifikasi OTP"}
                                 </button>
+
+                                <OtpResendButton
+                                    key={otpToken}
+                                    loading={loading}
+                                    onResend={requestOtp}
+                                />
 
                                 <button
                                     type="button"

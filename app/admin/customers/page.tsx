@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Search,
   ShoppingBag,
+  Trash2,
   UserCheck,
   Users,
   X,
@@ -49,6 +50,7 @@ export default function AdminCustomersPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   async function fetchCustomers() {
     try {
@@ -73,6 +75,36 @@ export default function AdminCustomersPage() {
   useEffect(() => {
     fetchCustomers();
   }, []);
+
+  async function deleteCustomer(customer: Customer) {
+    const confirmed = window.confirm(
+      `Hapus pelanggan ${customer.name}? Aksi ini tidak bisa dibatalkan.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(customer.id);
+      setError("");
+
+      const response = await apiFetch(`/admin/customers/${customer.id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal menghapus pelanggan.");
+      }
+
+      setCustomers((current) =>
+        current.filter((item) => item.id !== customer.id),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const summary = useMemo(
     () => ({
@@ -214,6 +246,7 @@ export default function AdminCustomersPage() {
                   <th className="px-4 py-3">Total Transaksi</th>
                   <th className="px-4 py-3">Aktivitas Terakhir</th>
                   <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -287,6 +320,17 @@ export default function AdminCustomersPage() {
                         >
                           {customer.is_active ? "Aktif" : "Nonaktif"}
                         </span>
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => deleteCustomer(customer)}
+                          disabled={deletingId === customer.id}
+                          className="inline-flex h-9 items-center gap-2 rounded-md border border-red-200 px-3 text-xs font-bold text-red-600 transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-60"
+                        >
+                          <Trash2 size={15} />
+                          {deletingId === customer.id ? "Menghapus" : "Hapus"}
+                        </button>
                       </td>
                     </tr>
                   ))

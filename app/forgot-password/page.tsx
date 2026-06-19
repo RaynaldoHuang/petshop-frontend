@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import OtpInput from "@/components/OtpInput";
+import OtpResendButton from "@/components/OtpResendButton";
 
 import img5 from "@/public/image/img5.webp";
 
@@ -24,12 +25,11 @@ export default function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    async function requestOtp(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
+    async function requestOtp() {
         try {
             setLoading(true);
             setError("");
+            setOtpCode("");
 
             const res = await fetch(`${API}/forgot-password/request-otp`, {
                 method: "POST",
@@ -53,6 +53,11 @@ export default function ForgotPasswordPage() {
         } finally {
             setLoading(false);
         }
+    }
+
+    async function handleRequestOtp(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        await requestOtp();
     }
 
     async function resetPassword(e: React.FormEvent<HTMLFormElement>) {
@@ -126,7 +131,7 @@ export default function ForgotPasswordPage() {
                         ) : null}
 
                         {!otpToken ? (
-                            <form onSubmit={requestOtp}>
+                            <form onSubmit={handleRequestOtp}>
                                 <label className="mb-2 block text-sm text-[#19398A]">
                                     Nomor Telepon
                                 </label>
@@ -213,6 +218,13 @@ export default function ForgotPasswordPage() {
                                 >
                                     {loading ? "Menyimpan..." : "Simpan Password Baru"}
                                 </button>
+
+                                <OtpResendButton
+                                    key={otpToken}
+                                    loading={loading}
+                                    onResend={requestOtp}
+                                    className="h-11 w-full rounded-xl border border-gray-200 text-sm font-semibold text-[#19398A] transition hover:border-orange-300 hover:text-orange-500 disabled:cursor-not-allowed disabled:opacity-70"
+                                />
                             </form>
                         )}
                     </div>
