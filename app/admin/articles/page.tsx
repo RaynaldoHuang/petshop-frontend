@@ -78,6 +78,62 @@ function formatDate(value: string | null | undefined) {
   }).format(new Date(value));
 }
 
+async function uploadEmbeddedImages(content: string) {
+  if (typeof window === "undefined" || !content.includes("data:image/")) {
+    return content;
+  }
+
+  const template = document.createElement("template");
+  template.innerHTML = content;
+
+  const embeddedImages = Array.from(
+    template.content.querySelectorAll<HTMLImageElement>('img[src^="data:image/"]'),
+  );
+
+  if (embeddedImages.length === 0) {
+    return content;
+  }
+
+  for (const [index, image] of embeddedImages.entries()) {
+    const src = image.getAttribute("src");
+    if (!src) continue;
+
+    const blob = await fetch(src).then((response) => response.blob());
+    const extension = blob.type.split("/")[1] || "png";
+    const file = new File([blob], `article-image-${index + 1}.${extension}`, {
+      type: blob.type || "image/png",
+    });
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await apiFetch("/admin/editor/upload-image", {
+      method: "POST",
+      body: formData,
+    });
+    const data: { path?: string; url?: string; message?: string; errors?: Record<string, string[]> } =
+      await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const validationMessage = data.errors
+        ? Object.values(data.errors).flat().join(" ")
+        : null;
+      throw new Error(
+        validationMessage || data.message || "Gagal mengupload gambar lama di konten artikel.",
+      );
+    }
+
+    const uploadedSrc = data.path ? getStorageUrl(data.path) : data.url;
+    if (!uploadedSrc) {
+      throw new Error("Upload gambar lama berhasil, tetapi URL gambar tidak terbaca.");
+    }
+
+    image.setAttribute("src", uploadedSrc);
+  }
+
+  return template.innerHTML;
+}
+
 export default function AdminArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -217,8 +273,13 @@ export default function AdminArticlesPage() {
       setSaving(true);
       setError("");
 
+      const normalizedForm = {
+        ...form,
+        content: await uploadEmbeddedImages(form.content),
+      };
+
       const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
+      Object.entries(normalizedForm).forEach(([key, value]) => {
         formData.append(
           key,
           typeof value === "boolean" ? (value ? "1" : "0") : value,
