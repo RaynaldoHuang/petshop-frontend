@@ -13,6 +13,7 @@ type Props = {
 };
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+const MAX_ARTICLE_IMAGE_SIZE = 5 * 1024 * 1024;
 
 export default function ArticleRichTextEditor({ value, onChange }: Props) {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -60,6 +61,11 @@ export default function ArticleRichTextEditor({ value, onChange }: Props) {
     async function uploadImage(file: File) {
         if (!API) {
             alert("NEXT_PUBLIC_API_URL belum terbaca");
+            return;
+        }
+
+        if (file.size > MAX_ARTICLE_IMAGE_SIZE) {
+            alert("Ukuran gambar maksimal 5 MB.");
             return;
         }
 

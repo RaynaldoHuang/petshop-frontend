@@ -60,6 +60,7 @@ const emptyForm = {
 };
 
 const ITEMS_PER_PAGE = 8;
+const MAX_ARTICLE_IMAGE_SIZE = 5 * 1024 * 1024;
 
 function imageUrl(path: string | null) {
   if (!path || path.trim() === "" || path.trim() === "0") {
@@ -99,6 +100,11 @@ async function uploadEmbeddedImages(content: string) {
     if (!src) continue;
 
     const blob = await fetch(src).then((response) => response.blob());
+
+    if (blob.size > MAX_ARTICLE_IMAGE_SIZE) {
+      throw new Error("Salah satu gambar di konten artikel lebih dari 5 MB.");
+    }
+
     const extension = blob.type.split("/")[1] || "png";
     const file = new File([blob], `article-image-${index + 1}.${extension}`, {
       type: blob.type || "image/png",
@@ -257,8 +263,17 @@ export default function AdminArticlesPage() {
 
   function handleThumbnail(file: File | null) {
     if (preview) URL.revokeObjectURL(preview);
+
+    if (file && file.size > MAX_ARTICLE_IMAGE_SIZE) {
+      setThumbnail(null);
+      setPreview("");
+      setError("Ukuran thumbnail maksimal 5 MB.");
+      return;
+    }
+
     setThumbnail(file);
     setPreview(file ? URL.createObjectURL(file) : "");
+    setError("");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
