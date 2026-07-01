@@ -5,6 +5,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import ImageExtension from "@tiptap/extension-image";
 import { apiFetch } from "@/lib/api";
+import { getStorageUrl } from "@/lib/storage";
 
 type Props = {
     value: string;
@@ -65,24 +66,36 @@ export default function ArticleRichTextEditor({ value, onChange }: Props) {
         const formData = new FormData();
         formData.append("image", file);
 
-        const res = await apiFetch(`${API}/admin/editor/upload-image`, {
-            method: "POST",
-            body: formData,
-            headers: {
-                Accept: "application/json",
-            },
-        });
+        try {
+            const res = await apiFetch("/admin/editor/upload-image", {
+                method: "POST",
+                body: formData,
+            });
 
-        if (!res.ok) {
-            const text = await res.text();
-            console.error(text);
-            alert("Upload image gagal. Cek route Laravel /api/editor/upload-image");
-            return;
-        }
+            const data: { path?: string; url?: string; message?: string; errors?: Record<string, string[]> } =
+                await res.json().catch(() => ({}));
 
-        const data: { url?: string } = await res.json();
-        if (data.url && editor) {
-            editor.chain().focus().setImage({ src: data.url }).run();
+            if (!res.ok) {
+                const validationMessage = data.errors
+                    ? Object.values(data.errors).flat().join(" ")
+                    : null;
+                throw new Error(
+                    validationMessage || data.message || "Upload image gagal.",
+                );
+            }
+
+            const imageSrc = data.path ? getStorageUrl(data.path) : data.url;
+
+            if (imageSrc && editor) {
+                editor.chain().focus().setImage({ src: imageSrc }).run();
+            }
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Upload image gagal. Coba lagi beberapa saat.";
+            console.error(error);
+            alert(message);
         }
     }
 
