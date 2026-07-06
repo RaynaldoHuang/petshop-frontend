@@ -171,7 +171,7 @@ export default async function BlogDetailPage({
 
                 {/* ARTICLE */}
                 <article>
-                    <div className="relative aspect-16/8 overflow-hidden rounded-4xl bg-gray-100">
+                    <div className="relative aspect-video overflow-hidden rounded-4xl bg-gray-100">
                         <Image
                             src={getImageUrl(article.thumbnail)}
                             alt={article.title}
@@ -231,7 +231,7 @@ export default async function BlogDetailPage({
                                         href={`/blog/${related.slug}`}
                                         className="group block"
                                     >
-                                        <div className="relative aspect-4/3 overflow-hidden rounded-2xl bg-gray-100">
+                                        <div className="relative aspect-video overflow-hidden rounded-2xl bg-gray-100">
                                             <Image
                                                 src={getImageUrl(related.thumbnail)}
                                                 alt={related.title}

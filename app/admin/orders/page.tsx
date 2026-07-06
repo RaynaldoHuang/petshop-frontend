@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 type OrderItem = {
   id: number;
@@ -40,7 +41,7 @@ type Order = {
   shipping_etd?: string | null;
   shipping_weight?: number | null;
   total_price: string;
-  payment_status: string;
+  payment_status?: string;
   order_status: string;
   created_at: string;
   items: OrderItem[];
@@ -70,7 +71,7 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function paymentLabel(status: string) {
+function paymentLabel(status: string | undefined) {
   const labels: Record<string, string> = {
     paid: "Lunas",
     settlement: "Lunas",
@@ -83,11 +84,11 @@ function paymentLabel(status: string) {
     expired: "Kedaluwarsa",
   };
 
-  return labels[status] || status;
+  return status ? labels[status] || status : "-";
 }
 
-function paymentBadge(status: string) {
-  if (["paid", "settlement"].includes(status)) {
+function paymentBadge(status: string | undefined) {
+  if (status && ["paid", "settlement"].includes(status)) {
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
 
@@ -115,6 +116,7 @@ function orderLabel(status: string) {
 }
 
 export default function AdminOrdersPage() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -123,6 +125,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const showPaymentInfo = user?.role === "super_admin";
 
   useEffect(() => {
     async function fetchOrders() {
@@ -259,7 +262,7 @@ export default function AdminOrdersPage() {
             Daftar Pesanan
           </h2>
           <p className="mt-2 text-sm text-slate-500">
-            Pantau pembayaran dan perbarui proses pesanan pelanggan.
+            Terima dan perbarui proses pesanan pelanggan.
           </p>
         </div>
 
@@ -349,7 +352,9 @@ export default function AdminOrdersPage() {
                   <th className="px-4 py-3">Pesanan</th>
                   <th className="px-4 py-3">Pelanggan</th>
                   <th className="px-4 py-3">Total</th>
-                  <th className="px-4 py-3">Pembayaran</th>
+                  {showPaymentInfo ? (
+                    <th className="px-4 py-3">Pembayaran</th>
+                  ) : null}
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Aksi</th>
                 </tr>
@@ -358,13 +363,13 @@ export default function AdminOrdersPage() {
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
+                    <td colSpan={showPaymentInfo ? 6 : 5} className="px-4 py-12 text-center text-slate-500">
                       Memuat data pesanan...
                     </td>
                   </tr>
                 ) : filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center">
+                    <td colSpan={showPaymentInfo ? 6 : 5} className="px-4 py-12 text-center">
                       <p className="font-semibold text-slate-700">Pesanan tidak ditemukan</p>
                       <p className="mt-1 text-sm text-slate-500">
                         Coba ubah kata pencarian atau filter status.
@@ -405,15 +410,17 @@ export default function AdminOrdersPage() {
                           </p>
                         </td>
 
-                        <td className="px-4 py-4">
-                          <span
-                            className={`inline-flex rounded-md border px-2.5 py-1 text-xs font-bold ${paymentBadge(
-                              order.payment_status,
-                            )}`}
-                          >
-                            {paymentLabel(order.payment_status)}
-                          </span>
-                        </td>
+                        {showPaymentInfo ? (
+                          <td className="px-4 py-4">
+                            <span
+                              className={`inline-flex rounded-md border px-2.5 py-1 text-xs font-bold ${paymentBadge(
+                                order.payment_status,
+                              )}`}
+                            >
+                              {paymentLabel(order.payment_status)}
+                            </span>
+                          </td>
+                        ) : null}
 
                         <td className="px-4 py-4">
                           <label className="relative block w-36">
@@ -586,13 +593,15 @@ export default function AdminOrdersPage() {
                     Status
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span
-                      className={`rounded-md border px-2.5 py-1 text-xs font-bold ${paymentBadge(
-                        selectedOrder.payment_status,
-                      )}`}
-                    >
-                      {paymentLabel(selectedOrder.payment_status)}
-                    </span>
+                    {showPaymentInfo ? (
+                      <span
+                        className={`rounded-md border px-2.5 py-1 text-xs font-bold ${paymentBadge(
+                          selectedOrder.payment_status,
+                        )}`}
+                      >
+                        {paymentLabel(selectedOrder.payment_status)}
+                      </span>
+                    ) : null}
                     <span
                       className={`rounded-md border px-2.5 py-1 text-xs font-bold ${orderBadge(
                         selectedOrder.order_status,

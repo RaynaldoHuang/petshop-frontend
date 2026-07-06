@@ -30,31 +30,39 @@ const menuGroups = [
   {
     label: "Workspace",
     items: [
-      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      { label: "Dashboard", href: "/admin", icon: LayoutDashboard, superAdminOnly: true },
       { label: "Pesanan", href: "/admin/orders", icon: ShoppingCart },
-      { label: "Produk", href: "/admin/products", icon: Package },
-      { label: "Kategori", href: "/admin/categories", icon: Tags },
-      { label: "Flash Sale", href: "/admin/flash-sales", icon: Zap },
+      { label: "Produk", href: "/admin/products", icon: Package, superAdminOnly: true },
+      { label: "Kategori", href: "/admin/categories", icon: Tags, superAdminOnly: true },
+      { label: "Flash Sale", href: "/admin/flash-sales", icon: Zap, superAdminOnly: true },
     ],
   },
   {
     label: "Konten",
     items: [
-      { label: "Artikel", href: "/admin/articles", icon: FileText },
+      { label: "Artikel", href: "/admin/articles", icon: FileText, superAdminOnly: true },
       { label: "Hero Banner", href: "/admin/hero-sections", icon: ImageIcon },
-      { label: "Pengumuman", href: "/admin/announcements", icon: Megaphone },
+      { label: "Pengumuman", href: "/admin/announcements", icon: Megaphone, superAdminOnly: true },
     ],
   },
   {
     label: "Pengaturan",
     items: [
-      { label: "Pengguna & Role", href: "/admin/users", icon: ShieldCheck },
-      { label: "Pelanggan", href: "/admin/customers", icon: Users },
-      { label: "Pembayaran", href: "/admin/payment-methods", icon: CreditCard },
-      { label: "RajaOngkir", href: "/admin/rajaongkir", icon: Truck },
+      { label: "Pengguna & Role", href: "/admin/users", icon: ShieldCheck, superAdminOnly: true },
+      { label: "Pelanggan", href: "/admin/customers", icon: Users, superAdminOnly: true },
+      { label: "Pembayaran", href: "/admin/payment-methods", icon: CreditCard, superAdminOnly: true },
+      { label: "RajaOngkir", href: "/admin/rajaongkir", icon: Truck, superAdminOnly: true },
     ],
   },
 ];
+
+const adminAllowedPaths = ["/admin/orders", "/admin/hero-sections"];
+
+function isAllowedAdminPath(pathname: string) {
+  return adminAllowedPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+}
 
 const pageTitles: Record<string, string> = {
   "/admin": "Dashboard",
@@ -97,6 +105,11 @@ export default function AdminLayout({
 
     if (!hasAdminAccess) {
       router.replace("/");
+      return;
+    }
+
+    if (user.role === "admin" && !isAllowedAdminPath(pathname)) {
+      router.replace("/admin/orders");
     }
   }, [hasAdminAccess, isAdminLogin, loading, pathname, router, user]);
 
@@ -180,8 +193,10 @@ export default function AdminLayout({
       >
         {menuGroups.map((group) => {
           const items = group.items.filter(
-            (item) => item.href !== "/admin/users" || user.role === "super_admin",
+            (item) => !item.superAdminOnly || user.role === "super_admin",
           );
+
+          if (items.length === 0) return null;
 
           return (
           <div

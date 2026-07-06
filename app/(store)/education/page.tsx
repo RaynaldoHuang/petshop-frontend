@@ -116,7 +116,7 @@ export default function ArticlesPage() {
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                             {[...Array(8)].map((_, index) => (
                                 <div key={index}>
-                                    <div className="aspect-4/3 animate-pulse rounded-lg bg-gray-200" />
+                                    <div className="aspect-video animate-pulse rounded-lg bg-gray-200" />
 
                                     <div className="mt-4 h-4 w-32 animate-pulse rounded bg-gray-200" />
 
@@ -147,7 +147,7 @@ export default function ArticlesPage() {
                                         className="group block"
                                     >
                                         {/* CARD */}
-                                        <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-gray-100">
+                                        <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-100">
                                             <Image
                                                 src={getImageUrl(article.thumbnail)}
                                                 alt={article.title}

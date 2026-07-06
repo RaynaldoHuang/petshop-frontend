@@ -96,7 +96,7 @@ export default function HomeArticleSection() {
                             href={`/blog/${article.slug}`}
                             className="group grid grid-cols-[108px_minmax(0,1fr)] gap-3 rounded-md border border-slate-100 bg-white p-2 sm:block sm:border-0 sm:p-0"
                         >
-                            <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100 sm:aspect-[4/3] sm:rounded-lg">
+                            <div className="relative aspect-video overflow-hidden rounded-md bg-gray-100 sm:rounded-lg">
                                 <Image
                                     src={getImageUrl(article.thumbnail)}
                                     alt={article.title}
