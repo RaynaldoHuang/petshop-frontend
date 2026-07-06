@@ -32,7 +32,7 @@ const menuGroups = [
     items: [
       { label: "Dashboard", href: "/admin", icon: LayoutDashboard, superAdminOnly: true },
       { label: "Pesanan", href: "/admin/orders", icon: ShoppingCart },
-      { label: "Produk", href: "/admin/products", icon: Package, superAdminOnly: true },
+      { label: "Produk", href: "/admin/products", icon: Package },
       { label: "Kategori", href: "/admin/categories", icon: Tags, superAdminOnly: true },
       { label: "Flash Sale", href: "/admin/flash-sales", icon: Zap, superAdminOnly: true },
     ],
@@ -56,7 +56,7 @@ const menuGroups = [
   },
 ];
 
-const adminAllowedPaths = ["/admin/orders", "/admin/hero-sections"];
+const adminAllowedPaths = ["/admin/orders", "/admin/products", "/admin/hero-sections"];
 
 function isAllowedAdminPath(pathname: string) {
   return adminAllowedPaths.some(
