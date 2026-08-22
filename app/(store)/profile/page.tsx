@@ -1,254 +1,38 @@
 "use client";
 
 import AuthGuard from "@/components/AuthGuard";
-import OtpInput from "@/components/OtpInput";
-import OtpResendButton from "@/components/OtpResendButton";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiFetch } from "@/lib/api";
-import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { KeyRound, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import Link from "next/link";
 
 export default function ProfilePage() {
     const { user, logout } = useAuth();
-    const [form, setForm] = useState({
-        current_password: "",
-        password: "",
-        password_confirmation: "",
-        otp_code: "",
-    });
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [otpLoading, setOtpLoading] = useState(false);
-    const [otpToken, setOtpToken] = useState("");
-    const [error, setError] = useState("");
-
-    async function changePassword(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
-        try {
-            setLoading(true);
-            setError("");
-
-            if (form.password !== form.password_confirmation) {
-                throw new Error("Konfirmasi password baru tidak sama.");
-            }
-
-            const response = await apiFetch("/password/change", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    ...form,
-                    otp_token: otpToken || undefined,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || "Gagal mengganti password.");
-            }
-
-            setForm({
-                current_password: "",
-                password: "",
-                password_confirmation: "",
-                otp_code: "",
-            });
-            setOtpToken("");
-            toast.success("Password berhasil diperbarui");
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function requestOtp() {
-        try {
-            setOtpLoading(true);
-            setError("");
-
-            const response = await apiFetch("/password/request-change-otp", {
-                method: "POST",
-            });
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || "Gagal mengirim OTP.");
-            }
-
-            setOtpToken(data.otp_token);
-            setForm({ ...form, otp_code: "" });
-            toast.success(data.message || "Kode OTP sudah dikirim");
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
-        } finally {
-            setOtpLoading(false);
-        }
-    }
 
     return (
         <AuthGuard>
-            <main className="min-h-screen bg-[#F5F9FF] px-4 py-16">
-                <div className="mx-auto max-w-3xl space-y-6">
-                    <section className="rounded-3xl bg-white p-8 shadow-sm">
-                        <div className="flex items-center gap-5">
-                            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-orange-100 text-4xl">
-                                👤
+            <main className="min-h-screen bg-[#F7F9FC] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+                <div className="mx-auto max-w-4xl">
+                    <div className="mb-6">
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-500">Akun saya</p>
+                        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#19398A] sm:text-4xl">Profil</h1>
+                        <p className="mt-2 text-sm leading-6 text-gray-500 sm:text-base">Kelola informasi akun dan keamanan Anda.</p>
+                    </div>
+                    <div className="grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+                        <section className="h-fit rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 sm:h-20 sm:w-20"><UserRound size={34} strokeWidth={1.8} /></div>
+                                <div className="min-w-0"><h2 className="truncate text-xl font-bold text-[#19398A] sm:text-2xl">{user?.name}</h2><p className="mt-1 break-all text-sm text-gray-500">{user?.phone}</p></div>
                             </div>
-
-                            <div>
-                                <h1 className="text-3xl font-bold text-[#19398A]">
-                                    {user?.name}
-                                </h1>
-
-                                <p className="mt-2 text-gray-500">
-                                    {user?.phone}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mt-10">
-                            <button
-                                onClick={logout}
-                                className="rounded-2xl bg-red-500 px-6 py-4 text-sm font-bold text-white transition hover:bg-red-600"
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    </section>
-
-                    <section className="rounded-3xl bg-white p-8 shadow-sm">
-                        <div>
-                            <h2 className="text-2xl font-bold text-[#19398A]">
-                                Ganti Password
-                            </h2>
-                            <p className="mt-2 text-sm leading-6 text-gray-500">
-                                Masukkan password lama, password baru, dan kode OTP yang dikirim.
-                            </p>
-                        </div>
-
-                        {error ? (
-                            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-500">
-                                {error}
-                            </div>
-                        ) : null}
-
-                        <form onSubmit={changePassword} className="mt-6 space-y-5">
-                            <PasswordInput
-                                label="Password Lama"
-                                value={form.current_password}
-                                show={showCurrentPassword}
-                                onToggle={() => setShowCurrentPassword(!showCurrentPassword)}
-                                onChange={(current_password) =>
-                                    setForm({ ...form, current_password })
-                                }
-                            />
-
-                            <PasswordInput
-                                label="Password Baru"
-                                value={form.password}
-                                show={showPassword}
-                                onToggle={() => setShowPassword(!showPassword)}
-                                onChange={(password) => setForm({ ...form, password })}
-                            />
-
-                            <PasswordInput
-                                label="Konfirmasi Password Baru"
-                                value={form.password_confirmation}
-                                show={showConfirmPassword}
-                                onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-                                onChange={(password_confirmation) =>
-                                    setForm({ ...form, password_confirmation })
-                                }
-                            />
-
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[#19398A]">
-                                    Kode OTP
-                                </label>
-                                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                                    <OtpInput
-                                        value={form.otp_code}
-                                        onChange={(otp_code) =>
-                                            setForm({ ...form, otp_code })
-                                        }
-                                        disabled={loading}
-                                    />
-                                    {otpToken ? (
-                                        <OtpResendButton
-                                            key={otpToken}
-                                            loading={otpLoading}
-                                            onResend={requestOtp}
-                                            className="h-12 rounded-xl border border-[#19398A] px-5 text-sm font-bold text-[#19398A] transition hover:bg-[#19398A] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
-                                        />
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={requestOtp}
-                                            disabled={otpLoading}
-                                            className="h-12 rounded-xl border border-[#19398A] px-5 text-sm font-bold text-[#19398A] transition hover:bg-[#19398A] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
-                                        >
-                                            {otpLoading ? "Mengirim..." : "Kirim OTP"}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="h-12 w-full rounded-xl bg-orange-500 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
-                            >
-                                {loading ? "Menyimpan..." : "Simpan Password"}
-                            </button>
-                        </form>
-                    </section>
+                            <div className="mt-7 rounded-xl border border-blue-100 bg-blue-50/60 p-4"><div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 shrink-0 text-[#19398A]" size={19} /><div><p className="text-sm font-bold text-[#19398A]">Akun terlindungi</p><p className="mt-1 text-xs leading-5 text-gray-500">Jaga kerahasiaan password dan kode verifikasi akun Anda.</p></div></div></div>
+                            <button onClick={logout} className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 text-sm font-bold text-red-600 transition hover:bg-red-50"><LogOut size={17} />Logout</button>
+                        </section>
+                        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
+                            <div className="flex items-start gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-orange-500"><KeyRound size={19} /></div><div><h2 className="text-xl font-bold text-[#19398A] sm:text-2xl">Keamanan akun</h2><p className="mt-1 text-sm leading-6 text-gray-500">Ubah password melalui proses verifikasi yang aman.</p></div></div>
+                            <div className="mt-6 rounded-xl border border-gray-200 bg-gray-50 p-4 sm:p-5"><p className="text-sm font-bold text-gray-700">Password akun</p><p className="mt-1 text-xs leading-5 text-gray-500">OTP hanya akan diminta saat Anda memulai proses ganti password.</p><Link href="/profile/change-password" className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl bg-orange-500 px-5 text-sm font-bold text-white transition hover:bg-orange-600">Kelola Password</Link></div>
+                        </section>
+                    </div>
                 </div>
             </main>
         </AuthGuard>
-    );
-}
-
-function PasswordInput({
-    label,
-    value,
-    show,
-    onToggle,
-    onChange,
-}: {
-    label: string;
-    value: string;
-    show: boolean;
-    onToggle: () => void;
-    onChange: (value: string) => void;
-}) {
-    return (
-        <div>
-            <label className="mb-2 block text-sm font-semibold text-[#19398A]">
-                {label}
-            </label>
-            <div className="relative">
-                <input
-                    type={show ? "text" : "password"}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder="••••••••"
-                    className="h-12 w-full rounded-xl border border-gray-300 px-4 pr-12 text-sm outline-none transition focus:border-orange-500"
-                />
-                <button
-                    type="button"
-                    onClick={onToggle}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#19398A]"
-                >
-                    {show ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-            </div>
-        </div>
     );
 }

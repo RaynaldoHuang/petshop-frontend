@@ -110,10 +110,10 @@ export default function ArticlesPage() {
             </section> */}
 
             {/* ARTICLES */}
-            <section className="py-16">
+            <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
                 <div className="mx-auto max-w-7xl">
                     {loading ? (
-                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
                             {[...Array(8)].map((_, index) => (
                                 <div key={index}>
                                     <div className="aspect-video animate-pulse rounded-lg bg-gray-200" />
@@ -144,10 +144,10 @@ export default function ArticlesPage() {
                                     <Link
                                         key={article.id}
                                         href={`/blog/${article.slug}`}
-                                        className="group block"
+                                        className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-4"
                                     >
                                         {/* CARD */}
-                                        <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-100">
+                                        <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-100">
                                             <Image
                                                 src={getImageUrl(article.thumbnail)}
                                                 alt={article.title}
@@ -157,19 +157,19 @@ export default function ArticlesPage() {
                                             />
                                         </div>
 
-                                        <p className="mt-4 text-sm font-medium text-[#19398A]">
+                                        <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-orange-500">
                                             {formatDate(
                                                 article.published_at ||
                                                 article.created_at
                                             )}
                                         </p>
 
-                                        <h3 className="mt-2 line-clamp-2 text-xl font-semibold text-[#19398A] transition group-hover:text-orange-500">
+                                        <h3 className="mt-2 line-clamp-2 text-lg font-bold leading-7 text-[#19398A] transition group-hover:text-orange-500 sm:text-xl">
                                             {article.title}
                                         </h3>
 
                                         {article.excerpt ? (
-                                            <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-500">
+                                            <p className="mt-2 line-clamp-3 text-sm leading-6 text-gray-500">
                                                 {article.excerpt}
                                             </p>
                                         ) : null}

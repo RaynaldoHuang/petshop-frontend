@@ -9,6 +9,7 @@ import {
   Plus,
   QrCode,
   Trash2,
+  Upload,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,6 +24,13 @@ type PaymentMethod = {
   fee_percentage: number;
   is_active: boolean;
   sort_order: number;
+};
+
+type PaymentSettings = {
+  mode: "manual" | "realtime";
+  whatsapp_number: string | null;
+  manual_qris_url: string | null;
+  manual_qris_mime: string | null;
 };
 
 const methodOptions = [
@@ -57,6 +65,11 @@ export default function PaymentMethodsPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [settings, setSettings] = useState<PaymentSettings | null>(null);
+  const [settingsMode, setSettingsMode] = useState<"manual" | "realtime">("realtime");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [qrisFile, setQrisFile] = useState<File | null>(null);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   async function loadMethods() {
     try {
@@ -76,7 +89,49 @@ export default function PaymentMethodsPage() {
 
   useEffect(() => {
     loadMethods();
+    apiFetch("/admin/payment-settings", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Gagal memuat pengaturan pembayaran.");
+        const data: PaymentSettings = await response.json();
+        setSettings(data);
+        setSettingsMode(data.mode);
+        setWhatsappNumber(data.whatsapp_number || "");
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : "Terjadi kesalahan."));
   }, []);
+
+  async function savePaymentSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      setSavingSettings(true);
+      setError("");
+      const body = new FormData();
+      body.append("mode", settingsMode);
+      body.append("whatsapp_number", whatsappNumber);
+      if (qrisFile) body.append("manual_qris", qrisFile);
+
+      const response = await apiFetch("/admin/payment-settings", {
+        method: "POST",
+        body,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        const validationMessage = data.errors
+          ? Object.values(data.errors).flat().join(" ")
+          : null;
+        throw new Error(validationMessage || data.message || "Gagal menyimpan pengaturan.");
+      }
+
+      setSettings(data.data);
+      setQrisFile(null);
+      toast.success(data.message);
+      await loadMethods();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setSavingSettings(false);
+    }
+  }
 
   const summary = useMemo(
     () => ({
@@ -230,6 +285,98 @@ export default function PaymentMethodsPage() {
             color="orange"
           />
         </section>
+
+        <form
+          onSubmit={savePaymentSettings}
+          className="mb-6 overflow-hidden rounded-lg border border-slate-200 bg-white"
+        >
+          <div className="border-b border-slate-200 p-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-orange-500">
+              Mode transaksi
+            </p>
+            <h3 className="mt-1 text-lg font-bold text-[#17376f]">
+              Manual atau realtime
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Realtime memakai Midtrans. Manual menampilkan QRIS toko dan meminta pelanggan mengunggah bukti bayar.
+            </p>
+          </div>
+
+          <div className="grid gap-5 p-5 lg:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3">
+              {(["realtime", "manual"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setSettingsMode(mode)}
+                  className={`rounded-lg border p-4 text-left transition ${
+                    settingsMode === mode
+                      ? "border-[#315b9f] bg-blue-50 text-[#17376f]"
+                      : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="block text-sm font-bold capitalize">{mode}</span>
+                  <span className="mt-1 block text-xs leading-5 opacity-75">
+                    {mode === "realtime" ? "Verifikasi otomatis Midtrans" : "QRIS dan verifikasi bukti"}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-bold text-slate-700">
+                  Nomor WhatsApp konfirmasi
+                </span>
+                <input
+                  value={whatsappNumber}
+                  onChange={(event) => setWhatsappNumber(event.target.value)}
+                  placeholder="Contoh: 6281234567890"
+                  required={settingsMode === "manual"}
+                  className="h-11 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-[#315b9f]"
+                />
+              </label>
+
+              <label className="block rounded-lg border border-dashed border-slate-300 p-4">
+                <span className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                  <Upload size={17} /> Unggah QRIS manual
+                </span>
+                <span className="mt-1 block text-xs text-slate-500">
+                  PDF, JPEG, PNG, atau WebP. Maksimal 5 MB.
+                </span>
+                <input
+                  type="file"
+                  accept="application/pdf,image/jpeg,image/png,image/webp"
+                  onChange={(event) => setQrisFile(event.target.files?.[0] || null)}
+                  className="mt-3 block w-full text-xs text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-bold file:text-[#17376f]"
+                />
+                {settings?.manual_qris_url ? (
+                  <a
+                    href={settings.manual_qris_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex text-xs font-bold text-[#315b9f] hover:underline"
+                  >
+                    Lihat QRIS yang sedang aktif
+                  </a>
+                ) : null}
+              </label>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 border-t border-slate-200 bg-slate-50 px-5 py-4">
+            <p className="text-xs text-slate-500">
+              Mode aktif: <strong className="capitalize text-slate-700">{settings?.mode || "-"}</strong>
+            </p>
+            <button
+              type="submit"
+              disabled={savingSettings}
+              className="h-10 rounded-md bg-[#17376f] px-4 text-sm font-bold text-white disabled:opacity-60"
+            >
+              {savingSettings ? "Menyimpan..." : "Simpan Mode Pembayaran"}
+            </button>
+          </div>
+        </form>
 
         {error && !formOpen ? (
           <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

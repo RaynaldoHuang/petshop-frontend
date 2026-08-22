@@ -11,6 +11,8 @@ import {
   CircleAlert,
   Clock3,
   Copy,
+  MessageCircle,
+  Upload,
 } from "lucide-react";
 
 import {
@@ -32,8 +34,11 @@ export default function PaymentPage() {
   const [timeLeft, setTimeLeft] =
     useState("");
 
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [uploadingProof, setUploadingProof] = useState(false);
+
   useEffect(() => {
-    if (!paymentData?.id) return;
+    if (!paymentData?.id || paymentData.payment_mode === "manual") return;
 
     const interval = setInterval(
       async () => {
@@ -182,8 +187,51 @@ export default function PaymentPage() {
     navigator.clipboard.writeText(text);
   }
 
+  async function submitProof() {
+    if (!paymentData?.id || !proofFile) return;
+
+    try {
+      setUploadingProof(true);
+      setError("");
+      const body = new FormData();
+      body.append("proof", proofFile);
+      const res = await apiFetch(`/payments/${paymentData.id}/proof`, {
+        method: "POST",
+        body,
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        const validationMessage = data.errors
+          ? Object.values(data.errors).flat().join(" ")
+          : null;
+        throw new Error(validationMessage || data.message || "Gagal mengunggah bukti pembayaran.");
+      }
+
+      setPaymentData((current: any) => ({
+        ...current,
+        status: data.status,
+        proof_submitted_at: data.proof_submitted_at,
+        proof_original_name: proofFile.name,
+        whatsapp_url: data.whatsapp_url,
+      }));
+      setProofFile(null);
+
+      if (data.whatsapp_url) {
+        window.location.href = data.whatsapp_url;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setUploadingProof(false);
+    }
+  }
+
   const isQris =
     paymentData?.type === "qris";
+
+  const isManual = paymentData?.payment_mode === "manual";
+  const qrisIsPdf = /\.pdf(?:$|\?)/i.test(paymentData?.qr_url || "");
 
   const paymentMethodLabel =
     isQris
@@ -195,6 +243,8 @@ export default function PaymentPage() {
       ? "Mengecek Pembayaran..."
       : paymentData?.status === "paid"
         ? "Pembayaran Berhasil"
+        : paymentData?.status === "awaiting_confirmation"
+          ? "Menunggu Konfirmasi Admin"
         : paymentData?.status === "expired"
           ? "Pembayaran Kedaluwarsa"
           : paymentData?.status === "failed"
@@ -265,7 +315,9 @@ export default function PaymentPage() {
               </h1>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500 lg:text-base lg:leading-7">
-                Bayar sesuai metode yang dipilih agar pesanan bisa diproses otomatis.
+                {isManual
+                  ? "Scan QRIS, unggah bukti pembayaran, lalu konfirmasikan melalui WhatsApp."
+                  : "Bayar sesuai metode yang dipilih agar pesanan bisa diproses otomatis."}
               </p>
             </div>
           </div>
@@ -311,7 +363,28 @@ export default function PaymentPage() {
 
                 <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 lg:rounded-xl lg:p-8">
 
-                  {paymentData?.qr_url ? (
+                  {paymentData?.qr_url && qrisIsPdf ? (
+                    <div className="text-center">
+                      <object
+                        data={`${paymentData.qr_url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                        type="application/pdf"
+                        aria-label="QRIS pembayaran"
+                        className="mx-auto h-[440px] w-full max-w-2xl rounded-xl bg-white lg:h-[560px]"
+                      >
+                        <p className="p-6 text-sm text-gray-500">
+                          Browser tidak dapat menampilkan preview QRIS PDF.
+                        </p>
+                      </object>
+                      <a
+                        href={paymentData.qr_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 inline-flex text-sm font-bold text-[#19398A] hover:underline"
+                      >
+                        Buka QRIS ukuran penuh
+                      </a>
+                    </div>
+                  ) : paymentData?.qr_url ? (
                     <Image
                       src={paymentData.qr_url}
                       alt="QRIS"
@@ -328,7 +401,7 @@ export default function PaymentPage() {
 
                 </div>
 
-                <div className="mt-5 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 lg:px-5 lg:py-4">
+                {!isManual ? <div className="mt-5 flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 lg:px-5 lg:py-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white">
                     <Clock3 size={18} />
                   </div>
@@ -342,7 +415,49 @@ export default function PaymentPage() {
                       {timeLeft || "-"}
                     </p>
                   </div>
-                </div>
+                </div> : null}
+
+                {isManual ? (
+                  <div className="mt-5 rounded-2xl border border-blue-100 bg-white p-4 lg:p-5">
+                    <h3 className="font-bold text-[#19398A]">Unggah bukti pembayaran</h3>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">
+                      PDF, JPEG, PNG, atau WebP maksimal 5 MB. Setelah dikirim, WhatsApp akan terbuka untuk konfirmasi.
+                    </p>
+
+                    {paymentData?.proof_submitted_at ? (
+                      <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                        <p className="text-sm font-bold text-emerald-700">Bukti pembayaran sudah terkirim.</p>
+                        <p className="mt-1 text-xs text-emerald-600">{paymentData.proof_original_name}</p>
+                        {paymentData.whatsapp_url ? (
+                          <a
+                            href={paymentData.whatsapp_url}
+                            className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white"
+                          >
+                            <MessageCircle size={17} /> Konfirmasi via WhatsApp
+                          </a>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <div className="mt-4">
+                        <input
+                          type="file"
+                          accept="application/pdf,image/jpeg,image/png,image/webp"
+                          onChange={(event) => setProofFile(event.target.files?.[0] || null)}
+                          className="block w-full text-xs text-gray-600 file:mr-3 file:rounded-xl file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:font-bold file:text-[#19398A]"
+                        />
+                        <button
+                          type="button"
+                          onClick={submitProof}
+                          disabled={!proofFile || uploadingProof}
+                          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3 text-sm font-bold text-white disabled:opacity-50"
+                        >
+                          <Upload size={17} />
+                          {uploadingProof ? "Mengunggah..." : "Kirim Bukti & Konfirmasi WhatsApp"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
 
               </div>
 
@@ -478,11 +593,13 @@ export default function PaymentPage() {
 
                   <div>
                     <h3 className="font-semibold text-green-700">
-                      Pembayaran Otomatis
+                      {isManual ? "Verifikasi Manual" : "Pembayaran Otomatis"}
                     </h3>
 
                     <p className="mt-2 text-sm leading-6 text-green-600 lg:leading-7">
-                      Status pesanan otomatis berubah setelah pembayaran terverifikasi.
+                      {isManual
+                        ? "Admin akan memeriksa bukti pembayaran sebelum pesanan diproses."
+                        : "Status pesanan otomatis berubah setelah pembayaran terverifikasi."}
                     </p>
                   </div>
                 </div>

@@ -45,6 +45,14 @@ type Order = {
   order_status: string;
   created_at: string;
   items: OrderItem[];
+  latest_payment?: {
+    id: number;
+    payment_mode: "manual" | "realtime";
+    status: string;
+    proof_original_name?: string | null;
+    proof_submitted_at?: string | null;
+    gross_amount: number;
+  } | null;
 };
 
 const ORDER_STATUS_OPTIONS = [
@@ -76,6 +84,7 @@ function paymentLabel(status: string | undefined) {
     paid: "Lunas",
     settlement: "Lunas",
     pending: "Menunggu",
+    awaiting_confirmation: "Perlu Konfirmasi",
     failed: "Gagal",
     deny: "Ditolak",
     cancelled: "Dibatalkan",
@@ -94,6 +103,10 @@ function paymentBadge(status: string | undefined) {
 
   if (status === "pending") {
     return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  if (status === "awaiting_confirmation") {
+    return "border-blue-200 bg-blue-50 text-blue-700";
   }
 
   return "border-red-200 bg-red-50 text-red-700";
@@ -219,6 +232,42 @@ export default function AdminOrdersPage() {
         ),
       );
       toast.success(`Pesanan #${id} diperbarui menjadi ${orderLabel(orderStatus)}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function downloadProof(paymentId: number) {
+    try {
+      const response = await apiFetch(`/payments/${paymentId}/proof`);
+      if (!response.ok) throw new Error("Gagal membuka bukti pembayaran.");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    }
+  }
+
+  async function confirmPayment(order: Order) {
+    const payment = order.latest_payment;
+    if (!payment) return;
+
+    try {
+      setUpdatingId(order.id);
+      const response = await apiFetch(`/admin/payments/${payment.id}/confirm`, {
+        method: "PUT",
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Gagal mengonfirmasi pembayaran.");
+
+      const updated = { ...order, payment_status: "paid", latest_payment: { ...payment, status: "paid" } };
+      setOrders((current) => current.map((item) => item.id === order.id ? updated : item));
+      setSelectedOrder(updated);
+      toast.success(data.message);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
     } finally {
@@ -565,6 +614,7 @@ export default function AdminOrdersPage() {
                   {formatDate(selectedOrder.created_at)}
                 </p>
               </div>
+
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
@@ -612,6 +662,42 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
               </div>
+
+              {showPaymentInfo && selectedOrder.latest_payment?.payment_mode === "manual" ? (
+                <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                    Pembayaran manual
+                  </p>
+                  {selectedOrder.latest_payment.proof_submitted_at ? (
+                    <>
+                      <p className="mt-2 text-sm text-blue-900">
+                        Bukti diterima: <strong>{selectedOrder.latest_payment.proof_original_name || "Bukti pembayaran"}</strong>
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => downloadProof(selectedOrder.latest_payment!.id)}
+                          className="rounded-md border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-[#17376f]"
+                        >
+                          Lihat bukti
+                        </button>
+                        {selectedOrder.latest_payment.status !== "paid" ? (
+                          <button
+                            type="button"
+                            onClick={() => confirmPayment(selectedOrder)}
+                            disabled={updatingId === selectedOrder.id}
+                            className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+                          >
+                            {updatingId === selectedOrder.id ? "Mengonfirmasi..." : "Konfirmasi Lunas"}
+                          </button>
+                        ) : null}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="mt-2 text-sm text-blue-800">Pelanggan belum mengunggah bukti pembayaran.</p>
+                  )}
+                </div>
+              ) : null}
 
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
